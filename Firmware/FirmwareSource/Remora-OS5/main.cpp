@@ -26,7 +26,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 #if defined TARGET_LPC176X || TARGET_STM32F1 || TARGET_SPIDER || TARGET_MONSTER8
 #include "SDBlockDevice.h"
-#elif defined TARGET_SKRV2 || TARGET_OCTOPUS || TARGET_BLACK_F407VE || TARGET_OCTOPUS_PRO_429
+#elif defined TARGET_SKRV2 || TARGET_OCTOPUS || TARGET_BLACK_F407VE || TARGET_OCTOPUS_PRO_429 || TARGET_SKRV3
 #include "SDIOBlockDevice.h"
 #endif
 
@@ -124,7 +124,7 @@ volatile uint16_t* ptrOutputs;
     SDBlockDevice blockDevice(P0_9, P0_8, P0_7, P0_6);  // mosi, miso, sclk, cs
     RemoraComms comms(ptrRxData, ptrTxData);
 
-#elif defined TARGET_SKRV2 || TARGET_OCTOPUS || TARGET_BLACK_F407VE || TARGET_OCTOPUS_PRO_429
+#elif defined TARGET_SKRV2 || TARGET_OCTOPUS || TARGET_BLACK_F407VE || TARGET_OCTOPUS_PRO_429 || TARGET_SKRV3
     SDIOBlockDevice blockDevice;
     RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
 
@@ -219,6 +219,11 @@ void setup()
 
     #if defined TARGET_STM32F4
     // deinitialise the SDIO device to avoid DMA issues with the SPI DMA Slave on the STM32F4
+    blockDevice.deinit();
+    #endif
+
+    #if defined TARGET_STM32H7
+    // deinitialise the SDIO device to avoid DMA issues with the SPI DMA Slave on the STM32H7
     blockDevice.deinit();
     #endif
 

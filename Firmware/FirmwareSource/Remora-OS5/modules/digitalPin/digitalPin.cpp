@@ -91,7 +91,7 @@ void DigitalPin::update()
 	bool pinState;
 
 	if (this->mode == 0)									// the pin is configured as an input
-	{
+	{   
 		pinState = this->pin->get();
 		if(this->invert)
 		{

@@ -49,9 +49,9 @@ QEI::QEI(volatile float &ptrEncoderCount, volatile uint16_t &ptrData, int bitNum
 {
     qei = new QEIdriver(true);
     this->hasIndex = true;
-    this->indexPulse = 100;                             
+    this->indexPulse = 100; //latch period for index pulse                            
 	this->count = 0;								    
-    this->pulseCount = 0;                               
+    this->pulseCount = 0; //counter for index latch period                              
     this->mask = 1 << this->bitNumber;
 }
 
@@ -63,7 +63,7 @@ void QEI::update()
     if (this->hasIndex)                                     // we have an index pin
     {
         // handle index, index pulse and pulse count
-        if (this->qei->indexDetected && (this->pulseCount == 0))    // index interrupt occured: rising edge on index pulse
+        if (this->qei->indexDetected && (this->pulseCount <= 0))    // index interrupt occured: rising edge on index pulse
         {
             *(this->ptrEncoderCount) = this->qei->indexCount;
             this->pulseCount = this->indexPulse;        

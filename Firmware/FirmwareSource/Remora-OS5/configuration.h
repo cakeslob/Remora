@@ -1,7 +1,7 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
-#define PRU_BASEFREQ    	40000 //24000   // PRU Base thread ISR update frequency (hz)
+#define PRU_BASEFREQ    	120000 //40000   // PRU Base thread ISR update frequency (hz)
 #define PRU_SERVOFREQ       1000            // PRU Servo thread ISR update freqency (hz)
 #define OVERSAMPLE          3
 #define SWBAUDRATE          19200           // Software serial baud rate
@@ -12,8 +12,8 @@
 
 #define JSON_BUFF_SIZE	    10000			// Jason dynamic buffer size
 
-#define JOINTS			    8				// Number of joints - set this the same as LinuxCNC HAL compenent. Max 8 joints
-#define VARIABLES           6             	// Number of command values - set this the same as the LinuxCNC HAL compenent
+#define JOINTS			    5				// Number of joints - set this the same as LinuxCNC HAL compenent. Max 8 joints
+#define VARIABLES           1             	// Number of command values - set this the same as the LinuxCNC HAL compenent
 
 #define PRU_DATA		    0x64617461 	    // "data" SPI payload
 #define PRU_READ            0x72656164      // "read" SPI payload

@@ -28,6 +28,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "SDBlockDevice.h"
 #elif defined TARGET_SKRV2 || TARGET_OCTOPUS || TARGET_BLACK_F407VE || TARGET_OCTOPUS_PRO_429
 #include "SDIOBlockDevice.h"
+#elif defined TARGET_FLEXIHAL
+#include "SDBlockDevice.h"
+#include "board_config.h"
 #endif
 
 #include "configuration.h"
@@ -65,6 +68,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "temperature.h"
 #include "tmc.h"
 #include "qei.h"
+
 
 /***********************************************************************
 *                STRUCTURES AND GLOBAL VARIABLES                       *
@@ -140,9 +144,13 @@ volatile uint16_t* ptrOutputs;
     SDBlockDevice blockDevice(PA_7, PA_6, PA_5, PA_4);  // mosi, miso, sclk, cs
     RemoraComms comms(ptrRxData, ptrTxData, SPI1, PC_1);    // use PC_1 as "slave select"
 
-#elif defined TARGET_SPIDER
+#elif defined TARGET_SPIDER 
     SDBlockDevice blockDevice(PA_7, PA_6, PA_5, PA_4);  // mosi, miso, sclk, cs
     RemoraComms comms(ptrRxData, ptrTxData, SPI1, PC_6);    // use PC_6 as "slave select"
+
+#elif defined TARGET_FLEXIHAL 
+    SDBlockDevice blockDevice(PB_5, PB_4, PB_3, PB_10);  // mosi, miso, sclk, cs - CS temporarily using KPSTR
+    RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_15);    // use PA_15 as "slave select"
 
 #endif
 
@@ -167,7 +175,7 @@ JsonObject module;
 /***********************************************************************
         ROUTINES
 ************************************************************************/
-
+/*
 void readJsonConfig()
 {
     printf("1. Reading json configuration file\n");
@@ -210,7 +218,9 @@ void readJsonConfig()
     fclose(jsonFile);
 }
 
+*/
 
+/*
 void setup()
 {
     printf("\n2. Setting up DMA and threads\n");
@@ -222,17 +232,27 @@ void setup()
     blockDevice.deinit();
     #endif
 
-    #if defined TARGET_SKR_MINI_E3
+    #if defined TARGET_SKR_MINI_E3 || TARGET_FLEXIHAL
     // remove the SD device as we are sharing the SPI with the comms module
     blockDevice.deinit();
+    printf("\n2.1. Deinit SD device\n");
     #endif
 
     // initialise the Remora comms 
     comms.init();
     comms.start();
 }
+*/
+void setup()
+{
+    printf("\n2. Setting up DMA and threads\n");
 
+    // initialise the Remora comms 
+    comms.init();
+    comms.start();
+}
 
+/*
 void deserialiseJSON()
 {
     printf("\n3. Parsing json configuration file\n");
@@ -263,8 +283,8 @@ void deserialiseJSON()
             break;
     }
 }
-
-
+*/
+/*
 void configThreads()
 {
     if (configError) return;
@@ -293,8 +313,21 @@ void configThreads()
         }
     }
 }
+*/
 
+void configThreads()
+{
+    printf("\n4. Config threads\n");
 
+    base_freq = PRU_BASEFREQ;
+    printf("Setting BASE thread frequency to %d\n", base_freq);
+   
+    servo_freq = PRU_SERVOFREQ;
+    printf("Setting SERVO thread frequency to %d\n", servo_freq);
+
+}
+
+/*
 void loadModules()
 {
     if (configError) return;
@@ -317,14 +350,17 @@ void loadModules()
 
             if (!strcmp(type,"Stepgen"))
             {
+                printf("Stepgen\n");
                 createStepgen();
             }
             else if (!strcmp(type,"Encoder"))
             {
+                printf("Encoder\n");
                 createEncoder();
             }
             else if (!strcmp(type,"RCServo"))
             {
+                printf("RC Servo\n");
                 createRCServo();
             }
         }
@@ -389,12 +425,73 @@ void loadModules()
         }
     }
 }
+*/
 
+void loadModules()
+{
+    if (configError) return;
+
+    printf("\n5. Loading Flexi modules\n");
+
+    ptrInputs = &txData.inputs;
+    ptrOutputs = &rxData.outputs;
+
+    //Stepgens
+    for (int i = 0; i < sizeof(StepgenConfigs)/sizeof(*StepgenConfigs); i++) {
+  //    for (int i = 0; i < 1; i++) { //limit to a single stepgen so we can use pins for logic analyzer debug
+        printf("\nCreate step generator for Joint %d\n", i);
+        ptrJointFreqCmd[i] = &rxData.jointFreqCmd[i];
+        ptrJointFeedback[i] = &txData.jointFeedback[i];
+        ptrJointEnable = &rxData.jointEnable;
+        Module* stepgen = new Stepgen(PRU_BASEFREQ, StepgenConfigs[i].JointNumber, StepgenConfigs[i].StepPin, StepgenConfigs[i].DirectionPin, STEPBIT, *ptrJointFreqCmd[i], *ptrJointFeedback[i], *ptrJointEnable);
+        baseThread->registerModule(stepgen);
+        baseThread->registerModulePost(stepgen);
+    }
+
+    //Digital Outputs
+    for (int i = 0; i < sizeof(DOConfigs)/sizeof(*DOConfigs); i++) {
+        printf("\nCreate digital output for %s\n", DOConfigs[i].Comment);
+        Module* digitalOutput = new DigitalPin(*ptrOutputs, 1, DOConfigs[i].Pin, DOConfigs[i].DataBit, DOConfigs[i].Invert, DOConfigs[i].Modifier); //data pointer, mode (1 = output, 0 = input), pin name, bit number, invert, modifier
+        servoThread->registerModule(digitalOutput);
+    }
+  
+    //Digital Inputs
+    for (int i = 0; i < sizeof(DIConfigs)/sizeof(*DIConfigs); i++) {
+        printf("\nCreate digital input for %s\n", DIConfigs[i].Comment);
+        Module* digitalInput = new DigitalPin(*ptrInputs, 0, DIConfigs[i].Pin, DIConfigs[i].DataBit, DIConfigs[i].Invert, DIConfigs[i].Modifier); //data pointer, mode (1 = output, 0 = input), pin name, bit number, invert, modifier
+        servoThread->registerModule(digitalInput);
+    }
+
+    //PRU Reset
+    ptrPRUreset = &PRUreset;
+    printf("Create Reset Pin at pin %s\n", PRU_Reset_Pin);
+    Module* resetPin = new ResetPin(*ptrPRUreset, PRU_Reset_Pin);
+    servoThread->registerModule(resetPin);
+
+    //QEI, Process Variable 0
+    int pv = 0;
+    ptrProcessVariable[pv]  = &txData.processVariable[pv];
+    printf("Creating QEI, hardware quadrature encoder interface\n");
+    Module* qei = new QEI(*ptrProcessVariable[pv], *ptrInputs, 11); // data bit for index is shared with digital inputs.
+    //Module* qei = new QEI(*ptrProcessVariable[pv]); // No index pin
+    baseThread->registerModule(qei);
+
+
+    //Spindle PWM
+    for (int i = 0; i < sizeof(PWMConfigs)/sizeof(*PWMConfigs); i++) {
+        printf("\nCreate PWM for %s at pin %s\n", PWMConfigs[i].Comment, PWMConfigs[i].Pin);
+        ptrSetPoint[i] = &rxData.setPoint[i];
+        Module* pwm = new PWM(*ptrSetPoint[i], PWMConfigs[i].Pin);
+        servoThread->registerModule(pwm);
+    }
+
+
+}
 
 void debugThreadHigh()
 {
-    //Module* debugOnB = new Debug("PC_1", 1);
-    //baseThread->registerModule(debugOnB);
+  //  Module* debugOnB = new Debug("PB_14", 1);
+  //  baseThread->registerModule(debugOnB);
 
     //Module* debugOnS = new Debug("PC_3", 1);
     //servoThread->registerModule(debugOnS);
@@ -405,8 +502,8 @@ void debugThreadHigh()
 
 void debugThreadLow()
 {
-    //Module* debugOffB = new Debug("PC_1", 0);
-    //baseThread->registerModule(debugOffB); 
+   // Module* debugOffB = new Debug("PB_14", 0);
+   // baseThread->registerModule(debugOffB); 
 
     //Module* debugOffS = new Debug("PC_3", 0);
     //servoThread->registerModule(debugOffS);
@@ -428,6 +525,7 @@ int main()
     prevState = ST_RESET;
 
     printf("\nRemora PRU - Programmable Realtime Unit\n");
+    printf("\nLoading - %s\n", BOARD);
 
     watchdog.start(2000);
 
@@ -449,9 +547,9 @@ int main()
             }
             prevState = currentState;
 
-            readJsonConfig();
+          //  readJsonConfig();
             setup();
-            deserialiseJSON();
+          //  deserialiseJSON();
             configThreads();
             createThreads();
             //debugThreadHigh();
@@ -516,11 +614,13 @@ int main()
             //wait for SPI data before changing to running state
             if (comms.getStatus())
             {
+                printf("\n## Entering RUNNING state\n");
                 currentState = ST_RUNNING;
             }
 
             if (PRUreset) 
             {
+                printf("\n## Entering PRU_RESET state\n");
                 currentState = ST_WDRESET;
             }
 

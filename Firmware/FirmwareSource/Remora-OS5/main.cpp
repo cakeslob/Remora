@@ -24,10 +24,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <string> 
 #include "FATFileSystem.h"
 
-#if defined TARGET_LPC176X || TARGET_STM32F1 || TARGET_SPIDER || TARGET_MONSTER8
+#if defined TARGET_LPC176X || TARGET_STM32F1 || TARGET_MONSTER8
 #include "SDBlockDevice.h"
 #elif defined TARGET_SKRV2 || TARGET_OCTOPUS || TARGET_BLACK_F407VE || TARGET_OCTOPUS_PRO_429
 #include "SDIOBlockDevice.h"
+#elif defined TARGET_SPIDER
+#include "SDBlockDevice.h"
+#include "board_config.h"
 #endif
 
 #include "configuration.h"
@@ -143,7 +146,7 @@ volatile uint16_t* ptrOutputs;
 #elif defined TARGET_SPIDER
     SDBlockDevice blockDevice(PA_7, PA_6, PA_5, PA_4);  // mosi, miso, sclk, cs
     RemoraComms comms(ptrRxData, ptrTxData, SPI1, PC_6);    // use PC_6 as "slave select"
-
+    
 #endif
 
 // Watchdog
@@ -294,6 +297,18 @@ void configThreads()
     }
 }
 
+void static_configThreads()
+{
+    printf("\n4. Config threads\n");
+
+    base_freq = PRU_BASEFREQ;
+    printf("Setting BASE thread frequency to %d\n", base_freq);
+   
+    servo_freq = PRU_SERVOFREQ;
+    printf("Setting SERVO thread frequency to %d\n", servo_freq);
+
+}
+
 
 void loadModules()
 {
@@ -390,7 +405,66 @@ void loadModules()
     }
 }
 
+void static_loadModules()
+{
+    if (configError) return;
 
+    printf("\n5. Loading Flexi modules\n");
+
+    ptrInputs = &txData.inputs;
+    ptrOutputs = &rxData.outputs;
+
+    //Stepgens
+    for (int i = 0; i < sizeof(StepgenConfigs)/sizeof(*StepgenConfigs); i++) {
+  //    for (int i = 0; i < 1; i++) { //limit to a single stepgen so we can use pins for logic analyzer debug
+        printf("\nCreate step generator for Joint %d\n", i);
+        ptrJointFreqCmd[i] = &rxData.jointFreqCmd[i];
+        ptrJointFeedback[i] = &txData.jointFeedback[i];
+        ptrJointEnable = &rxData.jointEnable;
+        Module* stepgen = new Stepgen(PRU_BASEFREQ, StepgenConfigs[i].JointNumber, StepgenConfigs[i].StepPin, StepgenConfigs[i].DirectionPin, StepgenConfigs[i].EnablePin, STEPBIT, *ptrJointFreqCmd[i], *ptrJointFeedback[i], *ptrJointEnable);
+        baseThread->registerModule(stepgen);
+        baseThread->registerModulePost(stepgen);
+    }
+
+    //Digital Outputs
+    for (int i = 0; i < sizeof(DOConfigs)/sizeof(*DOConfigs); i++) {
+        printf("\nCreate digital output for %s\n", DOConfigs[i].Comment);
+        Module* digitalOutput = new DigitalPin(*ptrOutputs, 1, DOConfigs[i].Pin, DOConfigs[i].DataBit, DOConfigs[i].Invert, DOConfigs[i].Modifier); //data pointer, mode (1 = output, 0 = input), pin name, bit number, invert, modifier
+        servoThread->registerModule(digitalOutput);
+    }
+  
+    //Digital Inputs
+    for (int i = 0; i < sizeof(DIConfigs)/sizeof(*DIConfigs); i++) {
+        printf("\nCreate digital input for %s\n", DIConfigs[i].Comment);
+        Module* digitalInput = new DigitalPin(*ptrInputs, 0, DIConfigs[i].Pin, DIConfigs[i].DataBit, DIConfigs[i].Invert, DIConfigs[i].Modifier); //data pointer, mode (1 = output, 0 = input), pin name, bit number, invert, modifier
+        servoThread->registerModule(digitalInput);
+    }
+
+    //PRU Reset
+    ptrPRUreset = &PRUreset;
+    printf("Create Reset Pin at pin %s\n", PRU_Reset_Pin);
+    Module* resetPin = new ResetPin(*ptrPRUreset, PRU_Reset_Pin);
+    servoThread->registerModule(resetPin);
+/*
+    //QEI, Process Variable 0
+    int pv = 0;
+    ptrProcessVariable[pv]  = &txData.processVariable[pv];
+    printf("Creating QEI, hardware quadrature encoder interface\n");
+    Module* qei = new QEI(*ptrProcessVariable[pv], *ptrInputs, 11); // data bit for index is shared with digital inputs.
+    //Module* qei = new QEI(*ptrProcessVariable[pv]); // No index pin
+    baseThread->registerModule(qei);
+*/
+
+    //Spindle PWM
+    for (int i = 0; i < sizeof(PWMConfigs)/sizeof(*PWMConfigs); i++) {
+        printf("\nCreate PWM for %s at pin %s\n", PWMConfigs[i].Comment, PWMConfigs[i].Pin);
+        ptrSetPoint[i] = &rxData.setPoint[i];
+        Module* pwm = new PWM(*ptrSetPoint[i], PWMConfigs[i].Pin);
+        servoThread->registerModule(pwm);
+    }
+
+
+}
 void debugThreadHigh()
 {
     //Module* debugOnB = new Debug("PC_1", 1);
@@ -449,6 +523,15 @@ int main()
             }
             prevState = currentState;
 
+            #if defined BOARDCONFIG_H
+            setup();
+          //  deserialiseJSON();
+            static_configThreads();
+            createThreads();
+            //debugThreadHigh();
+            static_loadModules();
+            //debugThreadLow();
+            #else
             readJsonConfig();
             setup();
             deserialiseJSON();
@@ -457,7 +540,8 @@ int main()
             //debugThreadHigh();
             loadModules();
             //debugThreadLow();
-
+            #endif
+            
             currentState = ST_START;
             break; 
 

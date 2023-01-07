@@ -103,13 +103,22 @@
         "config": {
             "clock_source": {
                 "help": "Mask value : USE_PLL_HSE_EXTC | USE_PLL_HSE_XTAL (need HW patch) | USE_PLL_HSI",
-                "value": "USE_PLL_HSE_EXTC|USE_PLL_HSI",
+                "value": "USE_PLL_HSE_XTAL|USE_PLL_HSI",
                 "macro_name": "CLOCK_SOURCE"
             },
             "usb_speed": {
                 "help": "USE_USB_OTG_FS or USE_USB_OTG_HS or USE_USB_HS_IN_FS",
                 "value": "USE_USB_OTG_FS"
-            }
+            },
+            "hse_value": {
+                "help": "HSE via 12MHz xtal",
+                "value": "12000000",
+                "macro_name": "HSE_VALUE"
+             }
+        },
+        "overrides": {
+               "lse_available": 0
+        
         },
         "device_has_add": [
             "ANALOGOUT",
@@ -120,8 +129,7 @@
             "SD"
 
         ],
-        "device_name": "STM32F446VE",
-        "bootloader_supported": true
+        "device_name": "STM32F446VE"
     },
 
     "OCTOPUS": {

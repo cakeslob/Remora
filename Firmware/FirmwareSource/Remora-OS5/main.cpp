@@ -523,7 +523,7 @@ int main()
             }
             prevState = currentState;
 
-            #if defined BOARDCONFIG_H
+            #if defined TARGET_SPIDER
             setup();
           //  deserialiseJSON();
             static_configThreads();

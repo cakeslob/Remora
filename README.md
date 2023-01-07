@@ -1,5 +1,10 @@
 # Remora
 
+This is a test branch to try out target based static configs, based on Expatria-Technologies/remora-flexi-hal  <https://github.com/Expatria-Technologies/remora-flexi-hal>
+
+This example is using the Fystec Spider as a test unit, under TARGET_SPIDER. 
+
+
 The full documentation is at <https://remora-docs.readthedocs.io/en/latest/>
 
 Remora is a free, opensource LinuxCNC component and Programmable Realtime Unit (PRU) firmware to allow LPC17xx and STM32F4 base controller boards to be used in conjuction with a Raspberry Pi to implement a LinuxCNC based CNC controller.

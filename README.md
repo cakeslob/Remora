@@ -9,8 +9,8 @@ My intentions with this is to be able to merge this with the rest of remora, but
 This example is using the Fystec Spider as a test unit. 
 Configuring the board_config.h is similar to a standard config file.
 
-The board configuration under the TARGET_SPIDER folder in the firmware source located here < 
-/Firmware/FirmwareSource/Remora-OS5/TARGET_SPIDER/board_config.h>
+The board configuration under the TARGET_SPIDER folder in the firmware source located here [< 
+/Firmware/FirmwareSource/Remora-OS5/TARGET_SPIDER/board_config.h>](https://github.com/cakeslob/Remora/blob/static_config/Firmware/FirmwareSource/Remora-OS5/TARGET_SPIDER/board_config.h)
 
 - Define your board name
 ```

@@ -4,7 +4,7 @@ This is a test branch to try out target based static configs, ported from Expatr
 
 My intentions with this is to be able to merge this with the rest of remora, but that is a work in progress. I am currently using this to test things that have no SD card slot, or targets that I cannot get to work the SD card slot to work properly. 
 
-# Remora Static Config Example
+# Config Example
 
 This example is using the Fystec Spider as a test unit. 
 Configuring the board_config.h is similar to a standard config file.

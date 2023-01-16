@@ -23,9 +23,15 @@ struct DigitalPinConfig {
 struct PWMPinConfig {
     const char* Comment;
     const char* Pin;
+    const int Peroid_sp;
 
 };
 
+struct BlinkPinConfig {
+    const char* Comment;
+    const char* Pin;
+    const int Freq;
+};
 
 //Module config
 
@@ -47,7 +53,7 @@ StepgenConfig StepgenConfigs[] = {{"X-Axis", 0, "PC_11", "PC_10","PC_9" }, //Com
 DigitalPinConfig DIConfigs[] = {{"X_LIMIT", "PA_1", PULLNONE, true, 0}}; //Comment, pin, modifier, invert, data bit
 DigitalPinConfig DOConfigs[] = {};             
 PWMPinConfig PWMConfigs[] = {};        
-
+BlinkPinConfig BlinkConfigs[] = {};    
 
 
 const char* PRU_Reset_Pin = "PC_7";

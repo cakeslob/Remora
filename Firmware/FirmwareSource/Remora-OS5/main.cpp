@@ -29,7 +29,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #elif defined TARGET_SKRV2 || TARGET_OCTOPUS || TARGET_BLACK_F407VE || TARGET_OCTOPUS_PRO_429
 #include "SDIOBlockDevice.h"
 #elif defined TARGET_SPIDER
-#include "SDBlockDevice.h"
+//#include "SDBlockDevice.h"
 #include "board_config.h"
 #endif
 
@@ -144,7 +144,7 @@ volatile uint16_t* ptrOutputs;
     RemoraComms comms(ptrRxData, ptrTxData, SPI1, PC_1);    // use PC_1 as "slave select"
 
 #elif defined TARGET_SPIDER
-    SDBlockDevice blockDevice(PA_7, PA_6, PA_5, PA_4);  // mosi, miso, sclk, cs
+   // SDBlockDevice blockDevice(PA_7, PA_6, PA_5, PA_4);  // mosi, miso, sclk, cs
     RemoraComms comms(ptrRxData, ptrTxData, SPI1, PC_6);    // use PC_6 as "slave select"
     
 #endif
@@ -170,7 +170,7 @@ JsonObject module;
 /***********************************************************************
         ROUTINES
 ************************************************************************/
-
+/*
 void readJsonConfig()
 {
     printf("1. Reading json configuration file\n");
@@ -212,14 +212,14 @@ void readJsonConfig()
     fflush(stdout);
     fclose(jsonFile);
 }
-
+*/
 
 void setup()
 {
     printf("\n2. Setting up DMA and threads\n");
 
     // TODO: we can probably just deinit the blockdevice for all targets....?
-
+/*
     #if defined TARGET_STM32F4
     // deinitialise the SDIO device to avoid DMA issues with the SPI DMA Slave on the STM32F4
     blockDevice.deinit();
@@ -229,13 +229,14 @@ void setup()
     // remove the SD device as we are sharing the SPI with the comms module
     blockDevice.deinit();
     #endif
+    */
 
     // initialise the Remora comms 
     comms.init();
     comms.start();
 }
 
-
+/*
 void deserialiseJSON()
 {
     printf("\n3. Parsing json configuration file\n");
@@ -296,7 +297,7 @@ void configThreads()
         }
     }
 }
-
+*/
 void static_configThreads()
 {
     printf("\n4. Config threads\n");
@@ -309,7 +310,7 @@ void static_configThreads()
 
 }
 
-
+/*
 void loadModules()
 {
     if (configError) return;
@@ -404,7 +405,7 @@ void loadModules()
         }
     }
 }
-
+*/
 void static_loadModules()
 {
     if (configError) return;
@@ -462,7 +463,12 @@ void static_loadModules()
         Module* pwm = new PWM(*ptrSetPoint[i], PWMConfigs[i].Pin);
         servoThread->registerModule(pwm);
     }
-
+    //Blink
+    for (int i = 0; i < sizeof(BlinkConfigs)/sizeof(*BlinkConfigs); i++) {
+        printf("\nMake Blink at pin %s\n", BlinkConfigs[i].Comment, BlinkConfigs[i].Pin, BlinkConfigs[i].Freq);
+        Module* blink = new Blink(BlinkConfigs[i].Pin, PRU_SERVOFREQ, BlinkConfigs[i].Freq);
+        servoThread->registerModule(blink);
+    }
 
 }
 void debugThreadHigh()
@@ -502,7 +508,7 @@ int main()
     prevState = ST_RESET;
 
     printf("\nRemora PRU - Programmable Realtime Unit\n");
-
+    printf("\nLoading - %s\n", BOARD);
     watchdog.start(2000);
 
     while(1)
@@ -523,7 +529,7 @@ int main()
             }
             prevState = currentState;
 
-            #if defined TARGET_SPIDER
+           // #if defined TARGET_SPIDER
             setup();
           //  deserialiseJSON();
             static_configThreads();
@@ -531,7 +537,7 @@ int main()
             //debugThreadHigh();
             static_loadModules();
             //debugThreadLow();
-            #else
+         /*   #else
             readJsonConfig();
             setup();
             deserialiseJSON();
@@ -541,7 +547,7 @@ int main()
             loadModules();
             //debugThreadLow();
             #endif
-            
+         */   
             currentState = ST_START;
             break; 
 

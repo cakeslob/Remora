@@ -122,11 +122,9 @@
         },
         "device_has_add": [
             "ANALOGOUT",
-            "CAN",
-            "SERIAL_ASYNCH",
+           "SERIAL_ASYNCH",
             "FLASH",
-            "MPU",
-            "SD"
+            "MPU"
 
         ],
         "device_name": "STM32F446VE"

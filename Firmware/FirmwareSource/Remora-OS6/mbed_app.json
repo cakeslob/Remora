@@ -15,7 +15,12 @@
             "platform.stdio-baud-rate": 115200,
             "target.stdio_uart_tx": "PA_9",
             "target.stdio_uart_rx": "PA_10",
-            "target.features_add": ["STORAGE"]
+            "target.features_add": ["STORAGE"],
+            "target.device_has_remove": [
+                "RTC",
+                "LPTICKER",
+                "SLEEP"
+            ]
         },
         "LPC1768": {
             "target.mbed_app_start": "0x4000",
@@ -60,6 +65,13 @@
             "sd.SPI_CLK":  "PC_10",
             "sd.SPI_CS":   "PC_9",
             "target.components_add" : ["SD"]
+        },
+        "SPIDER_KING": {
+            "target.mbed_app_start": "0x08008000",
+            "platform.stdio-baud-rate": 115200,
+            "target.stdio_uart_tx": "PA_9",
+            "target.stdio_uart_rx": "PA_10",
+            "target.features_add": ["STORAGE"]
         },
         "OCTOPUS_429": {
             "target.mbed_app_start": "0x08008000",

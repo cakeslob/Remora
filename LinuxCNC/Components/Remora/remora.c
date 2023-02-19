@@ -18,7 +18,6 @@
 * Last change:
 ********************************************************************/
 
-
 #include "rtapi.h"			/* RTAPI realtime OS API */
 #include "rtapi_app.h"		/* RTAPI realtime module decls */
 #include "hal.h"			/* HAL public API decls */
@@ -39,14 +38,12 @@
 
 #include "remora.h"
 
-
 #define MODNAME "remora"
 #define PREFIX "remora"
 
 MODULE_AUTHOR("Scott Alford AKA scotta");
-MODULE_DESCRIPTION("Driver for Remora LPC1768 control board");
+MODULE_DESCRIPTION("Driver for Remora LPC and STM control boards");
 MODULE_LICENSE("GPL v2");
-
 
 /***********************************************************************
 *                STRUCTURES AND GLOBAL VARIABLES                       *
@@ -121,7 +118,7 @@ typedef union
   {
     int32_t header;
     int32_t jointFeedback[JOINTS];
-    float 	processVariable[VARIABLES];
+    float processVariable[VARIABLES];
     uint16_t inputs;
   };
 } rxData_t;
@@ -145,22 +142,21 @@ static int64_t 		accum[JOINTS] = { 0 };
 static int32_t 		old_count[JOINTS] = { 0 };
 static int32_t		accum_diff = 0;
 
-static int 			reset_gpio_pin = 25;				// RPI GPIO pin number used to force watchdog reset of the PRU 
+static int reset_gpio_pin = 25; // RPI GPIO pin number used to force watchdog reset of the PRU 
 
 typedef enum CONTROL { POSITION, VELOCITY, INVALID } CONTROL;
 char *ctrl_type[JOINTS] = { "p" };
 RTAPI_MP_ARRAY_STRING(ctrl_type,JOINTS,"control type (pos or vel)");
 
 enum CHIP { LPC, STM } chip;
-char *chip_type = { "LPC" }; //default to LPC
+char *chip_type = { "STM" }; //default to LPC
 RTAPI_MP_STRING(chip_type, "PRU chip type; LPC or STM");
 
-int SPI_clk_div = -1;
+int SPI_clk_div = 32;
 RTAPI_MP_INT(SPI_clk_div, "SPI clock divider");
 
 int PRU_base_freq = -1;
 RTAPI_MP_INT(PRU_base_freq, "PRU base thread frequency");
-
 
 /***********************************************************************
 *                  LOCAL FUNCTION DECLARATIONS                         *
@@ -172,8 +168,6 @@ static void spi_write();
 static void spi_read();
 static void spi_transfer();
 static CONTROL parse_ctrl_type(const char *ctrl);
-
-
 
 /***********************************************************************
 *                       INIT AND EXIT CODE                             *
@@ -214,7 +208,7 @@ int rtapi_app_main(void)
 	// check to see if the PRU base frequency has been set at the command line
 	if (PRU_base_freq != -1)
 	{
-		if ((PRU_base_freq < 40000) || (PRU_base_freq > 120000))
+		if ((PRU_base_freq < 40000) || (PRU_base_freq > 240000))
 		{
 			rtapi_print_msg(RTAPI_MSG_ERR, "ERROR: PRU base frequency incorrect\n");
 			return -1;
@@ -225,8 +219,6 @@ int rtapi_app_main(void)
 		PRU_base_freq = PRU_BASEFREQ;
 	}
 	
-	
-
     // connect to the HAL, initialise the driver
     comp_id = hal_init(modname);
     if (comp_id < 0)
@@ -247,7 +239,7 @@ int rtapi_app_main(void)
 	// Map the RPi BCM2835 peripherals - uses "rtapi_open_as_root" in place of "open"
 	if (!rt_bcm2835_init())
     {
-      rtapi_print_msg(RTAPI_MSG_ERR,"rt_bcm2835_init failed. Are you running with root privlages??\n");
+      rtapi_print_msg(RTAPI_MSG_ERR, "rt_bcm2835_init failed. Are you running with root privlages??\n");
       return -1;
     }
 
@@ -255,7 +247,7 @@ int rtapi_app_main(void)
 	// and clear TX and RX fifos
 	if (!bcm2835_spi_begin())
     {
-      rtapi_print_msg(RTAPI_MSG_ERR,"bcm2835_spi_begin failed. Are you running with root privlages??\n");
+      rtapi_print_msg(RTAPI_MSG_ERR, "bcm2835_spi_begin failed. Are you running with root privlages??\n");
       return -1;
     }
 
@@ -271,12 +263,12 @@ int rtapi_app_main(void)
 	if (chip == LPC) 
 	{
 		bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_64);
-		rtapi_print_msg(RTAPI_MSG_INFO,"PRU: SPI default clk divider set to 64\n");
+		rtapi_print_msg(RTAPI_MSG_INFO, "PRU: SPI default clk divider set to 64\n");
 	}
 	else if (chip == STM) 
 	{
 		bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_16);
-		rtapi_print_msg(RTAPI_MSG_INFO,"PRU: SPI default clk divider set to 16\n");
+		rtapi_print_msg(RTAPI_MSG_INFO, "PRU: SPI default clk divider set to 16\n");
 	}
 	
 	// check if the default SPI clock divider has been overriden at the command line
@@ -286,19 +278,18 @@ int rtapi_app_main(void)
 		if ((SPI_clk_div & (SPI_clk_div - 1)) == 0)
 		{
 			bcm2835_spi_setClockDivider(SPI_clk_div);
-			rtapi_print_msg(RTAPI_MSG_INFO,"PRU: SPI clk divider overridden and set to %d\n", SPI_clk_div);			
+			rtapi_print_msg(RTAPI_MSG_INFO, "PRU: SPI clk divider overridden and set to %d\n", SPI_clk_div);			
 		}
 		else
 		{
 			// it's not a power of 2
-			rtapi_print_msg(RTAPI_MSG_ERR,"ERROR: PRU SPI clock divider incorrect\n");
+			rtapi_print_msg(RTAPI_MSG_ERR, "ERROR: PRU SPI clock divider incorrect\n");
 			return -1;
 		}	
 	}
 
     bcm2835_spi_chipSelect(BCM2835_SPI_CS0);                      // The default
     bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS0, LOW);      // the default
-
 
 	/* RPI_GPIO_P1_19        = 10 		MOSI when SPI0 in use
      * RPI_GPIO_P1_21        =  9 		MISO when SPI0 in use
@@ -491,11 +482,9 @@ void rtapi_app_exit(void)
     hal_exit(comp_id);
 }
 
-
 /***********************************************************************
 *                   LOCAL FUNCTION DEFINITIONS                         *
 ************************************************************************/
-
 
 // This is the same as the standard bcm2835 library except for the use of
 // "rtapi_open_as_root" in place of "open"
@@ -508,7 +497,7 @@ int rt_bcm2835_init(void)
 
     if (debug) 
     {
-        bcm2835_peripherals = (uint32_t*)BCM2835_PERI_BASE;
+        bcm2835_peripherals = (uint32_t *)BCM2835_PERI_BASE;
 
 	bcm2835_pads = bcm2835_peripherals + BCM2835_GPIO_PADS/4;
 	bcm2835_clk  = bcm2835_peripherals + BCM2835_CLOCK_BASE/4;
@@ -571,7 +560,6 @@ int rt_bcm2835_init(void)
                     pud_type_rpi4 = 1;
                 }
             }
-        
         }
         
 	fclose(fp);
@@ -686,7 +674,8 @@ void update_freq(void *arg, long period)
 		// calculate frequency limit
 		//max_freq = PRU_BASEFREQ/(4.0); 			//limit of DDS running at 80kHz
 		//max_freq = PRU_BASEFREQ/(2.0); 	
-		max_freq = PRU_base_freq/(2.0);
+		//max_freq = PRU_base_freq/(2.0);
+         max_freq = PRU_base_freq; // step pulses now happen in a single base thread interval
 
 		// check for user specified frequency limit parameter
 		if (data->maxvel[i] <= 0.0)

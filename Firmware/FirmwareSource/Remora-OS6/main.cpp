@@ -24,10 +24,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <string> 
 #include "FATFileSystem.h"
 
-#if defined TARGET_LPC176X || TARGET_STM32F1 || TARGET_SPIDER || TARGET_MONSTER8 || TARGET_ROBIN_3 || TARGET_MANTA8
+#if defined TARGET_LPC176X || TARGET_STM32F1 ||  TARGET_MONSTER8 || TARGET_ROBIN_3 || TARGET_MANTA8
 #include "SDBlockDevice.h"
 #elif defined TARGET_SKRV2 || TARGET_OCTOPUS_446 || TARGET_BLACK_F407VE || TARGET_OCTOPUS_429 | TARGET_SKRV3
 #include "SDIOBlockDevice.h"
+#elif defined TARGET_SPIDER 
+//#include "SDBlockDevice.h"
+#include "board_config.h"
+#elif defined TARGET_NUCLEO_F446RE
+#include "board_config.h"
+#elif defined TARGET_RUMBA32
+#include "board_config.h"
+
 #endif
 
 #include "configuration.h"
@@ -145,8 +153,15 @@ volatile uint16_t* ptrOutputs;
     RemoraComms comms(ptrRxData, ptrTxData, SPI1, PC_1);    // use PC_1 as "slave select"
 
 #elif defined TARGET_SPIDER
-    SDBlockDevice blockDevice(PA_7, PA_6, PA_5, PA_4);  // mosi, miso, sclk, cs
+   // SDBlockDevice blockDevice(PA_7, PA_6, PA_5, PA_4);  // mosi, miso, sclk, cs
     RemoraComms comms(ptrRxData, ptrTxData, SPI1, PC_6);    // use PC_6 as "slave select"
+
+
+#elif defined TARGET_NUCLEO_F446RE
+    RemoraComms comms(ptrRxData, ptrTxData, SPI2, PB_1);
+
+#elif defined TARGET_RUMBA32
+    RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
 
 
 #elif defined TARGET_MANTA8
@@ -176,7 +191,7 @@ JsonObject module;
 /***********************************************************************
         ROUTINES
 ************************************************************************/
-
+/*
 void readJsonConfig()
 {
     printf("1. Reading json configuration file\n");
@@ -218,30 +233,31 @@ void readJsonConfig()
     fflush(stdout);
     fclose(jsonFile);
 }
-
+*/
 
 void setup()
 {
     printf("\n2. Setting up DMA and threads\n");
 
     // TODO: we can probably just deinit the blockdevice for all targets....?
-
+/*
     #if defined TARGET_STM32F4
     // deinitialise the SDIO device to avoid DMA issues with the SPI DMA Slave on the STM32F4
     blockDevice.deinit();
     #endif
 
-    #if defined TARGET_SKR_MINI_E3 | TARGET_MANTA8
+    #if defined TARGET_SKR_MINI_E3
     // remove the SD device as we are sharing the SPI with the comms module
     blockDevice.deinit();
     #endif
+    */
 
     // initialise the Remora comms 
     comms.init();
     comms.start();
 }
 
-
+/*
 void deserialiseJSON()
 {
     printf("\n3. Parsing json configuration file\n");
@@ -302,8 +318,20 @@ void configThreads()
         }
     }
 }
+*/
+void static_configThreads()
+{
+    printf("\n4. Config threads\n");
 
+    base_freq = PRU_BASEFREQ;
+    printf("Setting BASE thread frequency to %d\n", base_freq);
+   
+    servo_freq = PRU_SERVOFREQ;
+    printf("Setting SERVO thread frequency to %d\n", servo_freq);
 
+}
+
+/*
 void loadModules()
 {
     if (configError) return;
@@ -398,8 +426,72 @@ void loadModules()
         }
     }
 }
+*/
+void static_loadModules()
+{
+    if (configError) return;
 
+    printf("\n5. Loading Flexi modules\n");
 
+    ptrInputs = &txData.inputs;
+    ptrOutputs = &rxData.outputs;
+
+    //Stepgens
+    for (int i = 0; i < sizeof(StepgenConfigs)/sizeof(*StepgenConfigs); i++) {
+  //    for (int i = 0; i < 1; i++) { //limit to a single stepgen so we can use pins for logic analyzer debug
+        printf("\nCreate step generator for Joint %d\n", i);
+        ptrJointFreqCmd[i] = &rxData.jointFreqCmd[i];
+        ptrJointFeedback[i] = &txData.jointFeedback[i];
+        ptrJointEnable = &rxData.jointEnable;
+        Module* stepgen = new Stepgen(PRU_BASEFREQ, StepgenConfigs[i].JointNumber, StepgenConfigs[i].StepPin, StepgenConfigs[i].DirectionPin, StepgenConfigs[i].EnablePin, STEPBIT, *ptrJointFreqCmd[i], *ptrJointFeedback[i], *ptrJointEnable);
+        baseThread->registerModule(stepgen);
+        baseThread->registerModulePost(stepgen);
+    }
+
+    //Digital Outputs
+    for (int i = 0; i < sizeof(DOConfigs)/sizeof(*DOConfigs); i++) {
+        printf("\nCreate digital output for %s\n", DOConfigs[i].Comment);
+        Module* digitalOutput = new DigitalPin(*ptrOutputs, 1, DOConfigs[i].Pin, DOConfigs[i].DataBit, DOConfigs[i].Invert, DOConfigs[i].Modifier); //data pointer, mode (1 = output, 0 = input), pin name, bit number, invert, modifier
+        servoThread->registerModule(digitalOutput);
+    }
+  
+    //Digital Inputs
+    for (int i = 0; i < sizeof(DIConfigs)/sizeof(*DIConfigs); i++) {
+        printf("\nCreate digital input for %s\n", DIConfigs[i].Comment);
+        Module* digitalInput = new DigitalPin(*ptrInputs, 0, DIConfigs[i].Pin, DIConfigs[i].DataBit, DIConfigs[i].Invert, DIConfigs[i].Modifier); //data pointer, mode (1 = output, 0 = input), pin name, bit number, invert, modifier
+        servoThread->registerModule(digitalInput);
+    }
+
+    //PRU Reset
+    ptrPRUreset = &PRUreset;
+    printf("Create Reset Pin at pin %s\n", PRU_Reset_Pin);
+    Module* resetPin = new ResetPin(*ptrPRUreset, PRU_Reset_Pin);
+    servoThread->registerModule(resetPin);
+/*
+    //QEI, Process Variable 0
+    int pv = 0;
+    ptrProcessVariable[pv]  = &txData.processVariable[pv];
+    printf("Creating QEI, hardware quadrature encoder interface\n");
+    Module* qei = new QEI(*ptrProcessVariable[pv], *ptrInputs, 11); // data bit for index is shared with digital inputs.
+    //Module* qei = new QEI(*ptrProcessVariable[pv]); // No index pin
+    baseThread->registerModule(qei);
+*/
+
+    //Spindle PWM
+    for (int i = 0; i < sizeof(PWMConfigs)/sizeof(*PWMConfigs); i++) {
+        printf("\nCreate PWM for %s at pin %s\n", PWMConfigs[i].Comment, PWMConfigs[i].Pin);
+        ptrSetPoint[i] = &rxData.setPoint[i];
+        Module* pwm = new PWM(*ptrSetPoint[i], PWMConfigs[i].Pin);
+        servoThread->registerModule(pwm);
+    }
+    //Blink
+    for (int i = 0; i < sizeof(BlinkConfigs)/sizeof(*BlinkConfigs); i++) {
+        printf("\nMake Blink at pin %s\n", BlinkConfigs[i].Comment, BlinkConfigs[i].Pin, BlinkConfigs[i].Freq);
+        Module* blink = new Blink(BlinkConfigs[i].Pin, PRU_SERVOFREQ, BlinkConfigs[i].Freq);
+        servoThread->registerModule(blink);
+    }
+
+}
 void debugThreadHigh()
 {
     //Module* debugOnB = new Debug("PC_1", 1);
@@ -438,6 +530,7 @@ int main()
 
     printf("\nRemora PRU - Programmable Realtime Unit \n");
     printf("\n Mbed-OS6 \n");
+    printf("\nLoading - %s\n", BOARD);
 
     watchdog.start(2000);
 
@@ -459,6 +552,13 @@ int main()
             }
             prevState = currentState;
 
+            setup();
+            static_configThreads();
+            createThreads();
+            //debugThreadHigh();
+            static_loadModules();
+            //debugThreadLow();
+         /*   #else
             readJsonConfig();
             setup();
             deserialiseJSON();
@@ -467,7 +567,8 @@ int main()
             //debugThreadHigh();
             loadModules();
             //debugThreadLow();
-
+            #endif
+         */   
             currentState = ST_START;
             break; 
 

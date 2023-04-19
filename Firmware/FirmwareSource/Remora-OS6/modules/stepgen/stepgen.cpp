@@ -23,6 +23,7 @@ void createStepgen()
     // create the step generator, register it in the thread
     Module* stepgen = new Stepgen(base_freq, joint, enable, step, dir, STEPBIT, *ptrJointFreqCmd[joint], *ptrJointFeedback[joint], *ptrJointEnable);
     baseThread->registerModule(stepgen);
+    baseThread->registerModulePost(stepgen);
 }
 
 
@@ -56,7 +57,10 @@ void Stepgen::update()
 	// Use the standard Module interface to run makePulses()
 	this->makePulses();
 }
-
+void Stepgen::updatePost()
+{
+	this->stopPulses();
+}
 void Stepgen::slowUpdate()
 {
 	return;
@@ -94,11 +98,9 @@ void Stepgen::makePulses()
 			this->directionPin->set(this->isForward);             		// Set direction pin
 			this->stepPin->set(true);										// Raise step pin - A4988 / DRV8825 stepper drivers only need 200ns setup time
 			*(this->ptrFeedback) = this->DDSaccumulator;                     // Update position feedback via pointer to the data receiver
-		}
-		else
-		{
-			this->stepPin->set(false);										// Reset step pin
-		}
+            this->isStepping = true;
+        }
+	
 
 	}
 	else
@@ -107,7 +109,11 @@ void Stepgen::makePulses()
 	}
 
 }
-
+void Stepgen::stopPulses()
+{
+	this->stepPin->set(false);	// Reset step pin
+	this->isStepping = false;
+}
 void Stepgen::setEnabled(bool state)
 {
 	this->isEnabled = state;

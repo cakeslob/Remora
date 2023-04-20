@@ -1,13 +1,6 @@
-# cakeslob Remora thing - trying to do stuff he doesnt understand, but will try anyways
-
-Things on the go but arent working:
-  - SKR3 STM32H743 : starts with the bootloader and then everything else
-  - MANTA M8P STM32G0B1 : almost everything working , dmamux and comms thing i dont understand
-  - MKS MONSTER8/ROBIN V3.1/SKIPR STM32F407 : With bootloader, bootloader is turning off spi after boot. Without bootloader, it works
-
-Things working now:
-- BTT Octopus STM32F446 working, with bootloader
-- Fysetc Spider STM32F446 working, with bootloader
+# Remora Nucleo CNC shield v3.0
+This repo is for a setup using a STM Nucleo64 STM32F446 with classic CNC shield v3.0 
+The configuration is for 4 axis and 3 endstops. It is a basic configuration for the time being, using the static config from Flexi-hal
 
 # Remora
 

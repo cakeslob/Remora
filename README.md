@@ -4,6 +4,12 @@ The configuration is for 4 axis and 3 endstops. It is a basic configuration for 
 - SPI2 for connection to RPI4, with pins PB1, PB13, PB14 and PB15, and pin PB2 for reset
 - the pinout configuration is loacted in /Firmware/FirmwareSource/Remora-OS6/TARGET_NUCLEO_F446RE/board_config.h
 - if you wish to change the pinout, you must configure it in this file, and them recompile 
+- currently only 3 inputs, will add more later, 
+- x limit = PC_7
+- y limit = PB_6
+- z limit = PA_7
+
+<img src="/nucleo.png" >
 
 # Remora
 

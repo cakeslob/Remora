@@ -223,7 +223,7 @@ PwmOut* Pin::hardware_pwm()
         if (this->pinNumber == 8) { return new mbed::PwmOut(PB_8); }
         if (this->pinNumber == 9) { return new mbed::PwmOut(PB_9); }
         if (this->pinNumber == 10) { return new mbed::PwmOut(PB_10); }
-        if (this->pinNumber == 11) { return new mbed::PwmOut(PB_11); }
+//        if (this->pinNumber == 11) { return new mbed::PwmOut(PB_11); }
         if (this->pinNumber == 13) { return new mbed::PwmOut(PB_13); }
         if (this->pinNumber == 14) { return new mbed::PwmOut(PB_14); }
         if (this->pinNumber == 15) { return new mbed::PwmOut(PB_15); }
@@ -234,25 +234,6 @@ PwmOut* Pin::hardware_pwm()
         if (this->pinNumber == 7) { return new mbed::PwmOut(PC_7); }
         if (this->pinNumber == 8) { return new mbed::PwmOut(PC_8); }
         if (this->pinNumber == 9) { return new mbed::PwmOut(PC_9); }
-    }
-    else if (this->portIndex == 3)
-    {
-        if (this->pinNumber == 12) { return new mbed::PwmOut(PD_12); }
-        if (this->pinNumber == 13) { return new mbed::PwmOut(PD_13); }
-        if (this->pinNumber == 14) { return new mbed::PwmOut(PD_14); }
-        if (this->pinNumber == 15) { return new mbed::PwmOut(PD_15); }
-    }
-    else if (this->portIndex == 4)
-    {
-        if (this->pinNumber == 5) { return new mbed::PwmOut(PE_5); }
-        if (this->pinNumber == 6) { return new mbed::PwmOut(PE_6); }
-        if (this->pinNumber == 8) { return new mbed::PwmOut(PE_8); }
-        if (this->pinNumber == 9) { return new mbed::PwmOut(PE_9); }
-        if (this->pinNumber == 10) { return new mbed::PwmOut(PE_10); }
-        if (this->pinNumber == 11) { return new mbed::PwmOut(PE_11); }
-        if (this->pinNumber == 12) { return new mbed::PwmOut(PE_12); }
-        if (this->pinNumber == 13) { return new mbed::PwmOut(PE_13); }
-        if (this->pinNumber == 14) { return new mbed::PwmOut(PE_14); }
     }
     return nullptr;
 }

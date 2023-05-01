@@ -13,11 +13,11 @@ QEIdriver::QEIdriver() :
 QEIdriver::QEIdriver(bool hasIndex) :
     hasIndex(hasIndex),
 //    qeiIndex(PE_13)
-    qeiIndex(PA_2)
+    qeiIndex(PA_12)
 {
     this->hasIndex = true;
-    //this->irq = EXTI15_10_IRQn;
-    this->irq = EXTI2_IRQn;
+    this->irq = EXTI15_10_IRQn;
+    //this->irq = EXTI2_IRQn;
 
     this->init();
 
@@ -49,22 +49,23 @@ void QEIdriver::init()
     GPIO_InitTypeDef GPIO_InitStruct = {0};
 
     __HAL_RCC_TIM2_CLK_ENABLE();
-    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
     /**TIM2 GPIO Configuration
-        PA_0     ------> TIM2_CH1
-        PA_1     ------> TIM2_CH2
+        PB_8     ------> TIM2_CH1
+        PB_9     ------> TIM2_CH2
         */
-    GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
+    GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
     this->htim.Instance = TIM2;
     this->htim.Init.Prescaler = 0;
     this->htim.Init.CounterMode = TIM_COUNTERMODE_UP;
     this->htim.Init.Period = 0xffffffff; // 32-bit count
+    //this->htim.Init.Period = 65535;
     this->htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     this->htim.Init.RepetitionCounter = 0;
 
@@ -108,17 +109,17 @@ void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef* htim_encoder)
         printf("Enabling TIM2 for QEI");
         __HAL_RCC_TIM2_CLK_ENABLE();
 
-        __HAL_RCC_GPIOA_CLK_ENABLE();
+        __HAL_RCC_GPIOB_CLK_ENABLE();
         /**TIM2 GPIO Configuration
-        PA_0     ------> TIM2_CH1
-        PA_1     ------> TIM2_CH2
+        PB_8     ------> TIM2_CH1
+        PB_9     ------> TIM2_CH2
         */
-        GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
+        GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
         GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
-        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
     }
 }
 

@@ -57,4 +57,36 @@
 	net j2pos-fb 		<= remora.joint.2.pos-fb 	=> joint.2.motor-pos-fb
 	net j2enable 		<= joint.2.amp-enable-out 	=> remora.joint.2.enable
 
+# end-stops
 
+	net X-home 	remora.input.0 	=> joint.0.home-sw-in joint.0.neg-lim-sw-in
+	net Y-home 	remora.input.1 	=> joint.1.home-sw-in joint.1.neg-lim-sw-in	
+	net Z-home 	remora.input. 	=> joint.2.home-sw-in joint.1.neg-lim-sw-in	
+	
+# other stuff
+
+#net coolant 	remora.input.3 
+#net abort 	remora.input.4 	
+#net hold 	remora.input.5 	
+#net resume 	remora.input.6 	
+
+#net out1 	remora.output.0 	
+#net out2 	remora.output.1
+
+# PWM output
+
+#net PWM 	 remora.SP.0
+
+# low res axis encoder
+# net X-rawcount 	 remora.PV.0
+# net y-rawcount 	 remora.PV.1
+
+# highres encoder  raw count and index
+
+# net qei-rawcount 	 remora.PV.5
+# net qei-index 	remora.input.15 
+
+
+
+
+	

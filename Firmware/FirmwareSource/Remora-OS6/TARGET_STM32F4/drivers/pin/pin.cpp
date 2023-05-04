@@ -49,7 +49,7 @@ Pin::Pin(std::string portAndPin, int dir, int modifier) :
                 break;
             case NONE:
             case PULLNONE:
-                printf("  Setting pin as No Pull\n");
+                //printf("  Setting pin as No Pull\n");
                 this->pull = GPIO_NOPULL;
                 break;
         }
@@ -66,7 +66,7 @@ Pin::Pin(std::string portAndPin, int dir, int modifier) :
 
 void Pin::configPin()
 {
-    printf("Creating Pin @\n");
+    //printf("Creating Pin @\n");
 
     //x can be (A..H) to select the GPIO peripheral for STM32F40XX and STM32F427X devices.
     GPIO_TypeDef* gpios[8] ={GPIOA,GPIOB,GPIOC,GPIOD,GPIOE,GPIOF,GPIOG,GPIOH};

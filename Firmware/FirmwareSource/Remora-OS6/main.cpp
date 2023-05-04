@@ -438,7 +438,7 @@ void static_loadModules()
 
     //Stepgens
     for (int i = 0; i < sizeof(StepgenConfigs)/sizeof(*StepgenConfigs); i++) {
-  //    for (int i = 0; i < 1; i++) { //limit to a single stepgen so we can use pins for logic analyzer debug
+    //    for (int i = 0; i < 1; i++) { //limit to a single stepgen so we can use pins for logic analyzer debug
         printf("\nCreate step generator for Joint %d\n", i);
         ptrJointFreqCmd[i] = &rxData.jointFreqCmd[i];
         ptrJointFeedback[i] = &txData.jointFeedback[i];
@@ -448,9 +448,21 @@ void static_loadModules()
         baseThread->registerModulePost(stepgen);
     }
 
+
+    //Encoder
+    
+    for (int i = 0; i < sizeof(EncoderConfigs)/sizeof(*EncoderConfigs); i++) {
+        int pv = i;
+        //printf("Creating encoder interface\n", EncoderConfigs[i].Comment);
+        ptrProcessVariable[pv]  = &txData.processVariable[pv];
+        Module* encoder = new Encoder(*ptrProcessVariable[pv], EncoderConfigs[i].PinA, EncoderConfigs[i].PinB, EncoderConfigs[i].Modifier); // No index pin
+        baseThread->registerModule(encoder);
+    
+    }
+    
     //Digital Outputs
     for (int i = 0; i < sizeof(DOConfigs)/sizeof(*DOConfigs); i++) {
-        printf("\nCreate digital output for %s\n", DOConfigs[i].Comment);
+        //printf("\nCreate digital output for %s\n", DOConfigs[i].Comment);
         Module* digitalOutput = new DigitalPin(*ptrOutputs, 1, DOConfigs[i].Pin, DOConfigs[i].DataBit, DOConfigs[i].Invert, DOConfigs[i].Modifier); //data pointer, mode (1 = output, 0 = input), pin name, bit number, invert, modifier
         servoThread->registerModule(digitalOutput);
     }
@@ -467,23 +479,25 @@ void static_loadModules()
     printf("Create Reset Pin at pin %s\n", PRU_Reset_Pin);
     Module* resetPin = new ResetPin(*ptrPRUreset, PRU_Reset_Pin);
     servoThread->registerModule(resetPin);
-/*
-    //QEI, Process Variable 0
-    int pv = 0;
+
+    //QEI, Process Variable 0, change to 5
+    int pv = 5;
+    //int pv = 0;
     ptrProcessVariable[pv]  = &txData.processVariable[pv];
     printf("Creating QEI, hardware quadrature encoder interface\n");
-    Module* qei = new QEI(*ptrProcessVariable[pv], *ptrInputs, 11); // data bit for index is shared with digital inputs.
+    Module* qei = new QEI(*ptrProcessVariable[pv], *ptrInputs, 15); // data bit for index is shared with digital inputs. change to 15 from 11
     //Module* qei = new QEI(*ptrProcessVariable[pv]); // No index pin
     baseThread->registerModule(qei);
-*/
 
-    //Spindle PWM
+
+//Spindle PWM
     for (int i = 0; i < sizeof(PWMConfigs)/sizeof(*PWMConfigs); i++) {
         printf("\nCreate PWM for %s at pin %s\n", PWMConfigs[i].Comment, PWMConfigs[i].Pin);
         ptrSetPoint[i] = &rxData.setPoint[i];
         Module* pwm = new PWM(*ptrSetPoint[i], PWMConfigs[i].Pin);
         servoThread->registerModule(pwm);
     }
+
     //Blink
     for (int i = 0; i < sizeof(BlinkConfigs)/sizeof(*BlinkConfigs); i++) {
         printf("\nMake Blink at pin %s\n", BlinkConfigs[i].Comment, BlinkConfigs[i].Pin, BlinkConfigs[i].Freq);
@@ -528,9 +542,8 @@ int main()
     currentState = ST_SETUP;
     prevState = ST_RESET;
 
-    printf("\nRemora PRU - Programmable Realtime Unit \n");
-    printf("\n Mbed-OS6 \n");
-    printf("\nLoading - %s\n", BOARD);
+    printf("\nRemora PRU - Programmable Realtime Unit Mbed-OS6 \n");
+        printf("\nLoading - %s\n", BOARD);
 
     watchdog.start(2000);
 

@@ -82,8 +82,8 @@ DigitalPinConfig DIConfigs[] = {{"X_LIMIT", "PC_7", PULLNONE, true, 0},
                                 {"RESUME", "PA_4", PULLNONE, true, 6}};  //Comment, pin, modifier, invert, data bit
 
 
-DigitalPinConfig DOConfigs[] = {{"AUX2", "PB_8", PULLNONE, false, 0}, //Comment, pin, modifier, invert, data bit
-                                {"AUX3", "PB_9", PULLNONE, false, 1}};
+DigitalPinConfig DOConfigs[] = {{"AUX2", "PC_8", PULLNONE, false, 0}, //Comment, pin, modifier, invert, data bit
+                                {"AUX3", "PC_9", PULLNONE, false, 1}};
 
 //PWMPinConfig PWMConfigs[] = {};        
 PWMPinConfig PWMConfigs[] = {{"Spindle PWM", "PC_6"}};

@@ -65,7 +65,8 @@ StepgenConfig StepgenConfigs[] =   {{"X-Axis", 0, "PB_4", "PC_10","PA_9" },
 
 //EncoderConfig EncoderConfigs[] = {{"X-axis", 0, "PA_13", "PA_14", PULLNONE}};
 EncoderConfig EncoderConfigs[] = {{"X-axis", "PC_13", "PC_14", PULLNONE},
-                                 {"Y-axis", "PA_13", "PA_14", PULLNONE}};
+                                 {"Y-axis", "PA_13", "PA_14", PULLNONE},
+                                 {"Z-axis", "PC_10", "PC_12", PULLNONE}};
 //EncoderConfig EncoderConfigs[] = {};
 
 //Servo thread objects - eStop, Reset Pin, Blink, Digital Pin, PWM, Temperature, Switch, QEI
@@ -81,11 +82,11 @@ DigitalPinConfig DIConfigs[] = {{"X_LIMIT", "PC_7", PULLNONE, true, 0},
                                 {"RESUME", "PA_4", PULLNONE, true, 6}};  //Comment, pin, modifier, invert, data bit
 
 
-DigitalPinConfig DOConfigs[] = {{"AUX2", "PC_10", PULLNONE, false, 0}, //Comment, pin, modifier, invert, data bit
-                                {"AUX3", "PC_12", PULLNONE, false, 1}};
+DigitalPinConfig DOConfigs[] = {{"AUX2", "PB_8", PULLNONE, false, 0}, //Comment, pin, modifier, invert, data bit
+                                {"AUX3", "PB_9", PULLNONE, false, 1}};
 
 //PWMPinConfig PWMConfigs[] = {};        
-PWMPinConfig PWMConfigs[] = {{"Spindle PWM", "PB_7"}};
+PWMPinConfig PWMConfigs[] = {{"Spindle PWM", "PC_6"}};
 
 BlinkPinConfig BlinkConfigs[] = {};    
 

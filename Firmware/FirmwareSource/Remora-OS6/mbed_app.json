@@ -10,11 +10,8 @@
     "artifact_name": "firmware",
 
     "target_overrides": {
-        "LPC1768": {
-            "target.mbed_app_start": "0x4000",
-            "platform.stdio-baud-rate": 115200,
-            "target.features_add": ["STORAGE"],
-            "target.components_add" : ["SD"]
+        "NUCLEO_F446RE": {
+             "platform.stdio-baud-rate": 115200
         },
         "LPC1769": {
             "target.mbed_app_start": "0x4000",

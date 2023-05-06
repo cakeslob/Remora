@@ -453,7 +453,7 @@ void static_loadModules()
     
     for (int i = 0; i < sizeof(EncoderConfigs)/sizeof(*EncoderConfigs); i++) {
         int pv = i;
-        //printf("Creating encoder interface\n", EncoderConfigs[i].Comment);
+        printf("Creating encoder interface\n", EncoderConfigs[i].Comment);
         ptrProcessVariable[pv]  = &txData.processVariable[pv];
         Module* encoder = new Encoder(*ptrProcessVariable[pv], EncoderConfigs[i].PinA, EncoderConfigs[i].PinB, EncoderConfigs[i].Modifier); // No index pin
         baseThread->registerModule(encoder);
@@ -462,7 +462,7 @@ void static_loadModules()
     
     //Digital Outputs
     for (int i = 0; i < sizeof(DOConfigs)/sizeof(*DOConfigs); i++) {
-        //printf("\nCreate digital output for %s\n", DOConfigs[i].Comment);
+        printf("\nCreate digital output for %s\n", DOConfigs[i].Comment);
         Module* digitalOutput = new DigitalPin(*ptrOutputs, 1, DOConfigs[i].Pin, DOConfigs[i].DataBit, DOConfigs[i].Invert, DOConfigs[i].Modifier); //data pointer, mode (1 = output, 0 = input), pin name, bit number, invert, modifier
         servoThread->registerModule(digitalOutput);
     }

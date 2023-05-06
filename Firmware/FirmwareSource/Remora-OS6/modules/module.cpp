@@ -6,7 +6,7 @@ Module::Module()
 {
 	this->counter = 0;
 	this->updateCount = 1;
-	//printf("\nCreating a std module\n");
+	printf("\nCreating a std module\n");
 }
 
 

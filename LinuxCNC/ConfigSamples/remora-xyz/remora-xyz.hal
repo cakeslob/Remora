@@ -61,7 +61,7 @@
 
 	net X-home 	remora.input.0 	=> joint.0.home-sw-in joint.0.neg-lim-sw-in
 	net Y-home 	remora.input.1 	=> joint.1.home-sw-in joint.1.neg-lim-sw-in	
-	net Z-home 	remora.input. 	=> joint.2.home-sw-in joint.1.neg-lim-sw-in	
+	net Z-home 	remora.input.2 	=> joint.2.home-sw-in joint.1.neg-lim-sw-in	
 	
 # other stuff
 
@@ -80,6 +80,7 @@
 # low res axis encoder
 # net X-rawcount 	 remora.PV.0
 # net y-rawcount 	 remora.PV.1
+# net z-rawcount 	 remora.PV.2
 
 # highres encoder  raw count and index
 

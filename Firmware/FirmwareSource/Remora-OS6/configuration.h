@@ -1,7 +1,7 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
-#define PRU_BASEFREQ    	120000 //24000   // PRU Base thread ISR update frequency (hz)
+#define PRU_BASEFREQ    	80000 //24000   // PRU Base thread ISR update frequency (hz)
 #define PRU_SERVOFREQ       1000            // PRU Servo thread ISR update freqency (hz)
 #define OVERSAMPLE          3
 #define SWBAUDRATE          19200           // Software serial baud rate
@@ -27,7 +27,7 @@
 #define PC_BAUD             115200          // UART baudrate
 
 
-#define LOOP_TIME           100
+#define LOOP_TIME           .100
 #define SPI_ERR_MAX         5
 // PRU reset will occur in SPI_ERR_MAX * LOOP_TIME = 0.5sec
 

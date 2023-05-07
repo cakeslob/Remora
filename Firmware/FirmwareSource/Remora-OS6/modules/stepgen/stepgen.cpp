@@ -57,10 +57,12 @@ void Stepgen::update()
 	// Use the standard Module interface to run makePulses()
 	this->makePulses();
 }
+
 void Stepgen::updatePost()
 {
 	this->stopPulses();
 }
+
 void Stepgen::slowUpdate()
 {
 	return;
@@ -93,27 +95,44 @@ void Stepgen::makePulses()
 			this->isForward = false;
 		}
 
-		if (stepNow)
+        if (this->lastDir != this->isForward)
+        {
+            //Direction has changed, flip dir pin and do not step this iteration to give some setup time. At a 160kHz base thread freq, this should be about 6.25us, at 120kHz 8.33us (1 period). JMC servos requre 6us. TODO - make hold time configurable.
+            this->lastDir = this->isForward;
+            this->directionPin->set(this->isForward);             		// Set direction pin
+        }
+		      else if (stepNow)
+		{
+			this->stepPin->set(true);										// Raise step pin
+			*(this->ptrFeedback) = this->DDSaccumulator;                     // Update position feedback via pointer to the data receiver
+			this->isStepping = true;
+		}
+
+        /*if (stepNow)
 		{
 			this->directionPin->set(this->isForward);             		// Set direction pin
 			this->stepPin->set(true);										// Raise step pin - A4988 / DRV8825 stepper drivers only need 200ns setup time
 			*(this->ptrFeedback) = this->DDSaccumulator;                     // Update position feedback via pointer to the data receiver
-            this->isStepping = true;
-        }
+			this->isStepping = true;
+		}*/
+    }
 	
 
-	}
+	
 	else
 	{
 		this->enablePin->set(true);
 	}
-
 }
+
+
 void Stepgen::stopPulses()
 {
 	this->stepPin->set(false);	// Reset step pin
 	this->isStepping = false;
 }
+
+
 void Stepgen::setEnabled(bool state)
 {
 	this->isEnabled = state;

@@ -73,13 +73,13 @@ EncoderConfig EncoderConfigs[] = {{"X-axis", "PC_13", "PC_14", PULLNONE},
 
 
 
-DigitalPinConfig DIConfigs[] = {{"X_LIMIT", "PC_7", PULLNONE, true, 0},
-                                {"Y_LIMIT", "PB_6", PULLNONE, true, 1},
-                                {"Z_LIMIT", "PA_7", PULLNONE, true, 2},
-                                {"COOLANT", "PB_0", PULLNONE, true, 3},
-                                {"ABORT", "PA_0", PULLNONE, true, 4},
-                                {"HOLD", "PA_1", PULLNONE, true, 5},
-                                {"RESUME", "PA_4", PULLNONE, true, 6}};  //Comment, pin, modifier, invert, data bit
+DigitalPinConfig DIConfigs[] = {{"X_LIMIT", "PC_7", PULLUP, false, 0},
+                                {"Y_LIMIT", "PB_6", PULLUP, false, 1},
+                                {"Z_LIMIT", "PA_7", PULLUP, false, 2},
+                                {"COOLANT", "PB_0", PULLUP, false, 3},
+                                {"ABORT", "PA_0", PULLUP, false, 4},
+                                {"HOLD", "PA_1", PULLUP, false, 5},
+                                {"RESUME", "PA_4", PULLUP, false, 6}};  //Comment, pin, modifier, invert, data bit
 
 
 DigitalPinConfig DOConfigs[] = {{"AUX2", "PC_8", PULLNONE, false, 0}, //Comment, pin, modifier, invert, data bit

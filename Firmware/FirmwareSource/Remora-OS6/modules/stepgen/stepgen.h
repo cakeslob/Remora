@@ -19,7 +19,7 @@ class Stepgen : public Module
     int jointNumber;              	// LinuxCNC joint number
     int mask;
 
-    std::string enable, step, direction;	 // physical pins connections
+    std::string step, direction;	 // physical pins connections
 
     bool isEnabled;        	// flag to enable the step generator
     bool isForward;        	// current direction
@@ -38,12 +38,12 @@ class Stepgen : public Module
 
   public:
 
-    Stepgen(int32_t, int, std::string, std::string, std::string, int, volatile int32_t&, volatile int32_t&, volatile uint8_t&);  // constructor
+    Stepgen(int32_t, int, std::string, std::string, int, volatile int32_t&, volatile int32_t&, volatile uint8_t&);  // constructor
 
-    Pin *enablePin, *stepPin, *directionPin;		// class object members - Pin objects
+    Pin *stepPin, *directionPin;		// class object members - Pin objects
 
     virtual void update(void);           // Module default interface
-    virtual void updatePost(void); 
+    virtual void updatePost(void);
     virtual void slowUpdate(void);
     void makePulses();
     void stopPulses();

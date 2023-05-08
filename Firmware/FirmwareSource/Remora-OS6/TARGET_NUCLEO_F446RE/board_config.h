@@ -9,7 +9,7 @@ struct StepgenConfig {
     const int JointNumber;
     const char* StepPin;
     const char* DirectionPin;
-    const char* EnablePin;
+  
 }; 
 
 struct EncoderConfig {
@@ -47,9 +47,15 @@ struct BlinkPinConfig {
 #define BOARD "NUCLEO GRBL SHIELD"
 
 //Base thread objects - Stepgens, encoders, and RC servos supported here
-//Comment, joint number, step pin, dir pin, enable pin
+//Comment, joint number, step pin, dir pin, 
  
  //446
+StepgenConfig StepgenConfigs[] =   {{"X-Axis", 0, "PA_10", "PB_4"}, 
+                                    {"Y-Axis", 1, "PB_3", "PB_10"},
+                                    {"Z-Axis", 2, "PB_5", "PA_8"},
+                                    {"A-Axis", 3, "PA_6", "PA_5"}};
+                                    
+/*
 StepgenConfig StepgenConfigs[] =   {{"X-Axis", 0, "PA_10", "PB_4","PA_9" }, 
                                     {"Y-Axis", 1, "PB_3", "PB_10","PA_9" },
                                     {"Z-Axis", 2, "PB_5", "PA_8","PA_9" },
@@ -71,7 +77,9 @@ EncoderConfig EncoderConfigs[] = {{"X-axis", "PC_13", "PC_14", PULLNONE},
 
 //Servo thread objects - eStop, Reset Pin, Blink, Digital Pin, PWM, Temperature, Switch, QEI
 
-
+DigitalPinConfig DOConfigs[] = {{"STEP_ENA", "PA_9", PULLNONE, false, 0}, //Comment, pin, modifier, invert, data bit
+                                {"AUX3", "PC_9", PULLNONE, false, 1},
+                                {"AUX2", "PC_8", PULLNONE, false, 2}};
 
 DigitalPinConfig DIConfigs[] = {{"X_LIMIT", "PC_7", PULLUP, false, 0},
                                 {"Y_LIMIT", "PB_6", PULLUP, false, 1},
@@ -82,8 +90,7 @@ DigitalPinConfig DIConfigs[] = {{"X_LIMIT", "PC_7", PULLUP, false, 0},
                                 {"RESUME", "PA_4", PULLUP, false, 6}};  //Comment, pin, modifier, invert, data bit
 
 
-DigitalPinConfig DOConfigs[] = {{"AUX2", "PC_8", PULLNONE, false, 0}, //Comment, pin, modifier, invert, data bit
-                                {"AUX3", "PC_9", PULLNONE, false, 1}};
+
 
 //PWMPinConfig PWMConfigs[] = {};        
 PWMPinConfig PWMConfigs[] = {{"Spindle PWM", "PC_6"}};

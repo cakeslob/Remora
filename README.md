@@ -9,6 +9,9 @@ The configuration is for 4 axis and 3 endstops. It is a basic configuration for 
 - y limit = PB_6
 - z limit = PA_7
 
+Documentation here 
+https://github.com/cakeslob/Remora-docs/blob/skr2/docs/source/hardware/nucleo446.rst
+
 <img src="/nucleo.png" >
 
 # Remora

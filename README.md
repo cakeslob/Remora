@@ -1,13 +1,11 @@
 # Remora Nucleo CNC shield v3.0
 This repo is for a setup using a STM Nucleo64 STM32F446 with classic CNC shield v3.0 
-The configuration is for 4 axis and 3 endstops. It is a basic configuration for the time being, using the static config from Flexi-hal.
+The configuration is for 4 stepgen, 4 encoders, 7 input, 2 output and 1 pwm. It is a basic configuration for the time being, using the static config from Flexi-hal.
 - SPI2 for connection to RPI4, with pins PB1, PB13, PB14 and PB15, and pin PB2 for reset
 - the pinout configuration is loacted in /Firmware/FirmwareSource/Remora-OS6/TARGET_NUCLEO_F446RE/board_config.h
 - if you wish to change the pinout, you must configure it in this file, and them recompile 
-- currently only 3 inputs, will add more later, 
-- x limit = PC_7
-- y limit = PB_6
-- z limit = PA_7
+- Firmware premade bin file is located in /Firmware/FirmwareBin/firmware.bin
+
 
 Documentation here 
 https://github.com/cakeslob/Remora-docs/blob/skr2/docs/source/hardware/nucleo446.rst

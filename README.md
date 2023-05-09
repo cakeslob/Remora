@@ -10,7 +10,7 @@ The configuration is for 4 stepgen, 4 encoders, 7 input, 2 output and 1 pwm. It 
 Documentation here 
 https://github.com/cakeslob/Remora-docs/blob/skr2/docs/source/hardware/nucleo446.rst
 
-<img src="/nucleo.png" >
+<img src="/nucleo446_pi.png" >
 
 # Remora
 

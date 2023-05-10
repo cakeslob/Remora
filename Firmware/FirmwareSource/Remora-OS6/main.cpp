@@ -453,10 +453,9 @@ void static_loadModules()
     //Encoder
     
     for (int i = 0; i < sizeof(EncoderConfigs)/sizeof(*EncoderConfigs); i++) {
-        int pv = i;
         printf("Creating encoder interface\n", EncoderConfigs[i].Comment);
-        ptrProcessVariable[pv]  = &txData.processVariable[pv];
-        Module* encoder = new Encoder(*ptrProcessVariable[pv], EncoderConfigs[i].PinA, EncoderConfigs[i].PinB, EncoderConfigs[i].Modifier); // No index pin
+        ptrProcessVariable[i]  = &txData.processVariable[i];
+        Module* encoder = new Encoder(*ptrProcessVariable[i], EncoderConfigs[i].PinA, EncoderConfigs[i].PinB, EncoderConfigs[i].Modifier); // No index pin
         baseThread->registerModule(encoder);
     
     }

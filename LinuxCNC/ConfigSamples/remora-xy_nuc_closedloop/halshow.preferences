@@ -1,8 +1,8 @@
 # Halshow settings
 # This file is generated automatically.
-wm geometry . 651x383+377+28
-placeFrames 0.3223787167449139
-set ::ratio 0.3223787167449139
+wm geometry . 700x383+54+36
+placeFrames 0.29941860465116277
+set ::ratio 0.29941860465116277
 set ::old_w_leftf 206
 set ::watchlist {
     pin+remora.input.1
@@ -10,30 +10,23 @@ set ::watchlist {
     pin+remora.input.2
     pin+remora.input.3
     pin+remora.input.4
-    pin+remora.input.6
-    pin+joint.0.homed
     pin+joint.0.home-sw-in
     pin+joint.1.home-sw-in
-    pin+remora.input.5
-    pin+remora.output.0
-    pin+remora.output.1
-    sig+X-home
-    pin+joint.0.amp-enable-out
-    sig+stepen
-    sig+j0enable
+    pin+j0pid.output
+    pin+j1pid.output
     pin+remora.PV.0
     pin+remora.PV.1
     pin+remora.PV.2
     pin+remora.PV.3
     pin+remora.PV.4
-    pin+remora.PV.5
-    pin+remora.input.15
-    pin+remora.input.7
+    pin+remora.input.5
+    pin+remora.joint.0.counts
+    pin+remora.joint.1.counts
 }
 set ::workmode watchhal
 set ::watchInterval 100
 set ::col1_width 100
 set ::ffmts 
 set ::ifmts 
-set ::alwaysOnTop 0
+set ::alwaysOnTop 1
 set ::autoSaveWatchlist 1

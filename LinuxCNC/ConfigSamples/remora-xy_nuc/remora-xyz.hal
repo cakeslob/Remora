@@ -58,9 +58,9 @@ loadrt not names=stepen_not
 
 # end-stops
 
-	net X-home 	remora.input.0 	=> joint.0.home-sw-in 
+	net X-home 	remora.input.5 	=> joint.0.home-sw-in 
 
-	net Y-home 	remora.input.1 	=> joint.1.home-sw-in 
+	net Y-home 	remora.input.4 	=> joint.1.home-sw-in 
 
 
 	net j0enable => stepen_not.in

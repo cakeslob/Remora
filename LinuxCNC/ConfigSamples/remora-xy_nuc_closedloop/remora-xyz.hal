@@ -1,0 +1,104 @@
+
+# load the realtime components
+
+	loadrt [KINS]KINEMATICS
+	loadrt [EMCMOT]EMCMOT base_period_nsec=[EMCMOT]BASE_PERIOD servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[KINS]JOINTS
+
+	#loadrt remora chip_type=STM SPI_clk_div=64
+	loadrt remora ctrl_type=v,v,p chip_type=STM SPI_clk_div=32
+	loadrt PRUencoder names=encoderJ0,encoderJ1
+	loadrt pid names=j0pid,j1pid
+
+
+# estop loopback, SPI comms enable and feedback
+	net user-enable-out 	<= iocontrol.0.user-enable-out		=> remora.SPI-enable
+	net user-request-enable <= iocontrol.0.user-request-enable	=> remora.SPI-reset
+	net remora-status 	<= remora.SPI-status 			=> iocontrol.0.emc-enable-in
+	
+
+# add the remora and motion functions to threads
+
+	addf remora.read servo-thread
+	addf PRUencoder.capture-position servo-thread
+	addf motion-command-handler servo-thread
+	addf motion-controller servo-thread
+	addf j0pid.do-pid-calcs servo-thread
+	addf j1pid.do-pid-calcs servo-thread
+	addf remora.update-freq servo-thread
+	addf remora.write servo-thread
+
+
+# Joint 0 setup
+
+	setp remora.joint.0.scale 		[JOINT_0]SCALE
+	setp remora.joint.0.maxaccel 	[JOINT_0]STEPGEN_MAXACCEL
+	setp encoderJ0.position-scale	[JOINT_0_ENCODER]ENCODER_SCALE
+
+	net j0enable 		<= joint.0.amp-enable-out 	=> remora.joint.0.enable
+	net j0enable 									=> j0pid.enable
+	net encoderJ0-count 							=> encoderJ0.raw_count
+	net j0pos-fb 		<= encoderJ0.position 		=> j0pid.feedback
+	net j0pos-fb 									=> joint.0.motor-pos-fb
+	net j0pos-cmd 		<= joint.0.motor-pos-cmd 	=> j0pid.command
+	net j0pid-output 	<= j0pid.output 			=> remora.joint.0.vel-cmd
+
+	setp j0pid.Pgain 		[JOINT_0]P
+	setp j0pid.Igain 		[JOINT_0]I
+	setp j0pid.Dgain 		[JOINT_0]D
+	setp j0pid.bias 		[JOINT_0]BIAS
+	setp j0pid.FF0 			[JOINT_0]FF0
+	setp j0pid.FF1 			[JOINT_0]FF1
+	setp j0pid.FF2 			[JOINT_0]FF2
+	setp j0pid.deadband 	[JOINT_0]DEADBAND
+	setp j0pid.maxoutput 	[JOINT_0]MAX_VELOCITY
+
+
+
+# Joint 1 setup
+
+	setp remora.joint.1.scale 		[JOINT_1]SCALE
+	setp remora.joint.1.maxaccel 	[JOINT_1]STEPGEN_MAXACCEL
+	setp encoderJ1.position-scale	[JOINT_1_ENCODER]ENCODER_SCALE
+
+	net j1enable 		<= joint.1.amp-enable-out 	=> remora.joint.1.enable
+	net j1enable 									=> j1pid.enable
+	net encoderJ1-count 							=> encoderJ1.raw_count
+	net j1pos-fb 		<= encoderJ1.position 		=> j1pid.feedback
+	net j1pos-fb 									=> joint.1.motor-pos-fb
+	net j1pos-cmd 		<= joint.1.motor-pos-cmd 	=> j1pid.command
+	net j1pid-output 	<= j1pid.output 			=> remora.joint.1.vel-cmd
+
+	setp j1pid.Pgain 		[JOINT_1]P
+	setp j1pid.Igain 		[JOINT_1]I
+	setp j1pid.Dgain 		[JOINT_1]D
+	setp j1pid.bias 		[JOINT_1]BIAS
+	setp j1pid.FF0 			[JOINT_1]FF0
+	setp j1pid.FF1 			[JOINT_1]FF1
+	setp j1pid.FF2 			[JOINT_1]FF2
+	setp j1pid.deadband 	[JOINT_1]DEADBAND
+	setp j1pid.maxoutput 	[JOINT_1]MAX_VELOCITY
+
+
+# Joint 2 setup
+
+	setp remora.joint.2.scale 		[JOINT_2]SCALE
+	setp remora.joint.2.maxaccel 	[JOINT_2]STEPGEN_MAXACCEL
+
+	net j2pos-cmd 		<= joint.2.motor-pos-cmd 	=> remora.joint.2.pos-cmd
+	net j2pos-fb 		<= remora.joint.2.pos-fb 	=> joint.2.motor-pos-fb
+	net j2enable 		<= joint.2.amp-enable-out 	=> remora.joint.2.enable
+
+
+
+# end-stops
+
+	net X-home 	remora.input.5 	=> joint.0.home-sw-in 
+	net Y-home 	remora.input.4 	=> joint.1.home-sw-in 
+
+
+# Remora Process Value (PV) feedbacks
+
+	net encoderJ0-count <= remora.PV.0
+	net encoderJ1-count <= remora.PV.1
+
+

@@ -1,0 +1,127 @@
+
+# load the realtime components
+
+	loadrt [KINS]KINEMATICS
+	loadrt [EMCMOT]EMCMOT base_period_nsec=[EMCMOT]BASE_PERIOD servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[KINS]JOINTS
+
+	#loadrt remora 
+
+	loadrt remora chip_type=STM SPI_clk_div=32
+	#loadrt remora chip_type=LPC SPI_clk_div=64
+
+# estop loopback, SPI comms enable and feedback
+	net user-enable-out 	<= iocontrol.0.user-enable-out		=> remora.SPI-enable
+	net user-request-enable <= iocontrol.0.user-request-enable	=> remora.SPI-reset
+	net remora-status 	<= remora.SPI-status 			=> iocontrol.0.emc-enable-in
+	
+
+# add the remora and motion functions to threads
+
+	addf remora.read servo-thread
+	addf motion-command-handler servo-thread
+	addf motion-controller servo-thread
+	addf remora.update-freq servo-thread
+	addf remora.write servo-thread
+
+
+# Joint 0 setup
+
+	setp remora.joint.0.scale 		[JOINT_0]SCALE
+	setp remora.joint.0.maxaccel 	[JOINT_0]STEPGEN_MAXACCEL
+
+	net xpos-cmd 		<= joint.0.motor-pos-cmd 	=> remora.joint.0.pos-cmd  
+	net j0pos-fb 		<= remora.joint.0.pos-fb 	=> joint.0.motor-pos-fb
+	net j0enable 		<= joint.0.amp-enable-out 	=> remora.joint.0.enable
+
+
+# Joint 1 setup
+
+	setp remora.joint.1.scale 		[JOINT_1]SCALE
+	setp remora.joint.1.maxaccel 	[JOINT_1]STEPGEN_MAXACCEL
+
+	net j1pos-cmd 		<= joint.1.motor-pos-cmd 	=> remora.joint.1.pos-cmd
+	net j1pos-fb 		<= remora.joint.1.pos-fb 	=> joint.1.motor-pos-fb 
+	net j1enable 		<= joint.1.amp-enable-out 	=> remora.joint.1.enable
+
+# Joint 2 setup
+
+	setp remora.joint.2.scale 		[JOINT_2]SCALE
+	setp remora.joint.2.maxaccel 	[JOINT_2]STEPGEN_MAXACCEL
+
+	net j2pos-cmd 		<= joint.2.motor-pos-cmd 	=> remora.joint.2.pos-cmd
+	net j2pos-fb 		<= remora.joint.2.pos-fb 	=> joint.2.motor-pos-fb
+	net j2enable 		<= joint.2.amp-enable-out 	=> remora.joint.2.enable
+
+
+
+# end-stops
+# end-stops
+
+	net X-home 	remora.input.5 	=> joint.0.home-sw-in 
+
+	net Y-home 	remora.input.4 	=> joint.1.home-sw-in 
+	
+	
+	
+
+
+# encoder
+# Initialize the encoder (spindle)
+loadrt PRUencoder names=encoder.0
+addf PRUencoder.capture-position servo-thread
+
+# scale encoder output to read in revolutions
+setp encoder.0.position-scale 16384.00
+# connect the hal encoder to linuxcnc
+net encoder-count <= remora.PV.5 => encoder.0.raw_count
+net encoder-phaseZ <= remora.input.15 => encoder.0.phase-Z
+
+net spindle-on <= spindle.0.on => 	remora.output.1 
+#net spindle-cmd-rpm     <= spindle.0.speed-out
+net spindle-cmd-rpm-abs <= spindle.0.speed-out-abs
+net spindle-cmd-rps     <= spindle.0.speed-out-rps
+net spindle-cmd-rps-abs <= spindle.0.speed-out-rps-abs
+net spindle-at-speed    => spindle.0.at-speed
+net spindle-cw <= spindle.0.forward
+
+#spindle PWM 0-100 control
+#loadrt scale count=1
+loadrt scale names=scale_to_rpm.0,scale-rpm
+addf scale-rpm servo-thread
+setp scale-rpm.gain 0.022 #rpm 9000
+net spindle-speed-scale spindle.0.speed-out => scale-rpm.in
+net spindle-speed-abs scale-rpm.out => remora.SP.0
+
+
+#######################################################
+# Beginning of threading related stuff
+#######################################################
+# spindle speed control
+#net spindle.0.cmd  spindle.0.speed-out => sim_encoder_0.speed
+#loadrt limit2 names=limit_speed
+#addf limit_speed servo-thread
+# simulate spindle mass
+#setp limit_speed.maxv 500.0 # rpm/second
+
+
+# encoder reset control
+# hook up motion controller's sync output
+net spindle-index-enable encoder.0.index-enable <=> spindle.0.index-enable
+
+# report our revolution count to the motion controller
+net spindle-position encoder.0.position => spindle.0.revs
+
+#net spindle-velocity-feedback-rps encoder.0.velocity => spindle.0.speed-in
+
+# for spindle velocity estimate
+loadrt lowpass names=lowpass_velocity.0
+#loadrt scale names=scale_to_rpm.0
+net spindle-rps-raw.0 encoder.0.velocity lowpass_velocity.0.in
+net spindle-rps-filtered.0 lowpass_velocity.0.out scale_to_rpm.0.in spindle.0.speed-in
+net spindle-rpm-filtered.0 scale_to_rpm.0.out
+setp scale_to_rpm.0.gain 60
+setp lowpass_velocity.0.gain .07
+addf lowpass_velocity.0 servo-thread
+addf scale_to_rpm.0 servo-thread
+
+

@@ -1,0 +1,7 @@
+# Initialize the encoder (spindle)
+loadrt PRUencoder names=encoder.0
+addf PRUencoder.capture-position servo-thread
+setp encoder.0.position-scale 4096.000000 #6
+# connect the hal encoder to linuxcnc
+net encoder-count <= remora.PV.0 => encoder.0.raw_count
+net encoder-phaseZ <= remora.input.7 => encoder.0.phase-Z

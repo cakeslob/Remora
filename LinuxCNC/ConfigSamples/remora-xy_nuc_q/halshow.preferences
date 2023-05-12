@@ -1,0 +1,38 @@
+# Halshow settings
+# This file is generated automatically.
+wm geometry . 648x383+-94+36
+placeFrames 0.300314465408805
+set ::ratio 0.300314465408805
+set ::old_w_leftf 191
+set ::watchlist {
+    pin+encoder.0.index-enable
+    pin+encoder.0.position
+    pin+encoder.0.position-scale
+    pin+encoder.0.raw_count
+    pin+encoder.0.reset
+    pin+remora.PV.0
+    pin+remora.SP.0
+    pin+spindle.0.index-enable
+    sig+spindle-index-enable
+    pin+spindle.0.speed-out
+    pin+spindle.0.speed-out-rps
+    pin+spindle.0.revs
+    pin+spindle.0.speed-cmd-rps
+    sig+spindle-position
+    pin+scale_to_rpm.0.in
+    pin+scale_to_rpm.0.out
+    pin+lowpass_velocity.0.in
+    pin+lowpass_velocity.0.out
+    pin+scale-rpm.gain
+    pin+encoder.0.phase-Z
+    sig+encoder-phaseZ
+    pin+remora.input.7
+    pin+remora.PV.5
+}
+set ::workmode watchhal
+set ::watchInterval 100
+set ::col1_width 100
+set ::ffmts 
+set ::ifmts 
+set ::alwaysOnTop 0
+set ::autoSaveWatchlist 1

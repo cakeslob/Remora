@@ -24,7 +24,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <string> 
 #include "FATFileSystem.h"
 
-#if defined TARGET_LPC176X || TARGET_STM32F1 || TARGET_SPIDER || TARGET_MONSTER8
+#if defined TARGET_LPC176X || TARGET_STM32F1 || TARGET_SPIDER || TARGET_MONSTER8 || TARGET_NUCLEO_F446RE 
 #include "SDBlockDevice.h"
 #elif defined TARGET_SKRV2 || TARGET_OCTOPUS || TARGET_BLACK_F407VE
 #include "SDIOBlockDevice.h"
@@ -147,6 +147,11 @@ volatile uint16_t* ptrOutputs;
     SDBlockDevice blockDevice(PA_7, PA_6, PA_5, PA_4);  // mosi, miso, sclk, cs
     RemoraComms comms(ptrRxData, ptrTxData, SPI1, PC_6);    // use PC_6 as "slave select"
 
+#elif defined TARGET_NUCLEO_F446RE 
+    SDBlockDevice blockDevice(PA_7, PA_6, PA_5, PB_5);  // mosi, miso, sclk, cs
+    //RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);    // use PC_1 as "slave select"
+
+
 #endif
 
 // Watchdog
@@ -174,10 +179,10 @@ const char * IP_Gateway =       "10.10.10.1";
 #define MOSI0               PA_7           
 #define MISO0               PA_6
 #define SCK0                PA_5
-#define SSEL0               PA_4
+#define SSEL0               PB_6
 
 SPI spi(MOSI0, MISO0, SCK0); // mosi, miso, sclk
-WIZnetInterface eth(&spi, SSEL0, PC_4); // spi, cs, reset    
+WIZnetInterface eth(&spi, SSEL0, PA_10); // spi, cs, reset    
 WIZnet_UDPSocket udp;
 Endpoint server;
 
@@ -570,7 +575,8 @@ int main()
                 threadsRunning = true;
 
                 // wait for threads to read IO before testing for PRUreset
-                wait(1);
+                //wait(1);
+                wait_us(1000000);
             }
 
             if (PRUreset)

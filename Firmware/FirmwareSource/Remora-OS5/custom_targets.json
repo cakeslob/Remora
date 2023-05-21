@@ -1,177 +1,242 @@
 {
-    "SKRV1_4": {
-        "inherits": ["LPC1768"]
-    },
-    "SKRV1_4_TURBO": {
-        "inherits": ["SKRV1_4"],
-        "device_name": "LPC1769"
-    },
-    "SKRV2": {
-        "inherits": ["FAMILY_STM32"],
-        "core": "Cortex-M4F",
+    "MANTA8": {
+        "inherits": ["MCU_STM32G0"],
         "extra_labels_add": [
-            "STM32F4",
-            "STM32F407",
-            "STM32F407xG",
-            "STM32F407VG"
+            "STM32G0",
+            "STM32G0B1xE"
+        ],
+        "macros_add": [
+            "STM32G0B1xx"
         ],
         "supported_toolchains": ["ARM", "uARM", "GCC_ARM", "IAR"],
-        "config": {
-            "clock_source": {
-                "help": "Mask value : USE_PLL_HSE_EXTC (need HW patch) | USE_PLL_HSE_XTAL | USE_PLL_HSI",
-                "value": "USE_PLL_HSE_XTAL|USE_PLL_HSI",
-                "macro_name": "CLOCK_SOURCE"
-            }
-        },
-        "overrides": { "lse_available": 0 },
+        "overrides": { "lse_available": 0 ,
+        "clock_source": "USE_PLL_HSE_XTAL|USE_PLL_HSI"},
         "device_has_add": [
             "ANALOGOUT",
-            "CAN",
-            "SERIAL_ASYNCH",
-            "TRNG",
-            "FLASH",
-            "MPU"
-        ],
-        "device_name": "STM32F407VGTx",
-        "bootloader_supported": true
-    },
-    "MONSTER8": {
-        "inherits": ["FAMILY_STM32"],
-        "core": "Cortex-M4F",
-        "extra_labels_add": [
-            "STM32F4",
-            "STM32F407",
-            "STM32F407xG",
-            "STM32F407VG"
-        ],
-        "supported_toolchains": ["ARM", "uARM", "GCC_ARM", "IAR"],
-        "config": {
-            "clock_source": {
-                "help": "Mask value : USE_PLL_HSE_EXTC (need HW patch) | USE_PLL_HSE_XTAL | USE_PLL_HSI",
-                "value": "USE_PLL_HSE_XTAL|USE_PLL_HSI",
-                "macro_name": "CLOCK_SOURCE"
-            }
-        },
-        "overrides": { "lse_available": 0 },
-        "device_has_add": [
-            "ANALOGOUT",
-            "CAN",
-            "SERIAL_ASYNCH",
-            "TRNG",
-            "FLASH",
-            "MPU"
-        ],
-        "device_name": "STM32F407VGTx",
-        "bootloader_supported": true
-    },
-    "SPIDER": {
-        "inherits": ["FAMILY_STM32"],
-        "core": "Cortex-M4F",
-        "extra_labels_add": [
-            "STM32F4", 
-            "STM32F446xE", 
-            "STM32F446VE"],
-        "config": {
-            "clock_source": {
-                "help": "Mask value : USE_PLL_HSE_EXTC | USE_PLL_HSE_XTAL (need HW patch) | USE_PLL_HSI",
-                "value": "USE_PLL_HSE_EXTC|USE_PLL_HSI",
-                "macro_name": "CLOCK_SOURCE"
-            },
-            "usb_speed": {
-                "help": "USE_USB_OTG_FS or USE_USB_OTG_HS or USE_USB_HS_IN_FS",
-                "value": "USE_USB_OTG_FS"
-            }
-        },
-        "device_has_add": [
-            "ANALOGOUT",
-            "CAN",
-            "SERIAL_ASYNCH",
-            "FLASH",
-            "MPU",
             "SD"
-
         ],
-        "device_name": "STM32F446VE",
+              "device_has_remove": ["LPTICKER"],
+        "device_name": "STM32G0B1RETx",
         "bootloader_supported": true
     },
-    "OCTOPUS": {
-        "inherits": ["FAMILY_STM32"],
+    "NUCLEO_F446RE": {
+        "inherits": ["MCU_STM32F4"],
         "core": "Cortex-M4F",
         "extra_labels_add": [
             "STM32F4", 
             "STM32F446xE", 
             "STM32F446ZE"],
+   
+         "overrides": {},  
+        "features_add": [
+            "STORAGE"
+        ],
+          "device_has_add": ["SD"],
+        "components_add": [
+            "SD"]
+
+    },
+    "SKRV3": {
+        "inherits": [
+            "MCU_STM32H743xI"
+        ],
+        "extra_labels_add": ["STM32H743xI"],
         "config": {
-            "clock_source": {
-                "help": "Mask value : USE_PLL_HSE_EXTC | USE_PLL_HSE_XTAL (need HW patch) | USE_PLL_HSI",
-                "value": "USE_PLL_HSE_EXTC|USE_PLL_HSI",
-                "macro_name": "CLOCK_SOURCE"
-            },
-            "usb_speed": {
-                "help": "USE_USB_OTG_FS or USE_USB_OTG_HS or USE_USB_HS_IN_FS",
-                "value": "USE_USB_OTG_FS"
+            "hse_value": {
+                "help": "HSE default value is 25MHz in HAL",
+                "value": "25000000",
+                "macro_name": "HSE_VALUE"
             }
         },
+        "overrides": {
+            "clock_source": "USE_PLL_HSE_XTAL",
+            "lse_available": 0
+        },
+        "macros_add": [
+            "STM32H743xx"
+        ],
+        "device_has_add": [
+            "FLASH",
+            "SERIAL_ASYNCH",
+            "MPU"
+        ],
+        
+        "device_name": "STM32H743VITx"
+    },
+    "SKRV2": {
+        "inherits": ["MCU_STM32F4"],
+        "extra_labels_add": [
+            "STM32F4",
+            "STM32F407",
+            "STM32F407xG",
+            "STM32F407VG"
+        ],
+        "macros_add": [
+            "STM32F407xx"
+        ],
+        "supported_toolchains": ["ARM", "uARM", "GCC_ARM", "IAR"],
+
+        "overrides": { "lse_available": 0 ,
+        "clock_source": "USE_PLL_HSE_XTAL|USE_PLL_HSI"},
         "device_has_add": [
             "ANALOGOUT",
             "CAN",
             "SERIAL_ASYNCH",
+            "TRNG",
             "FLASH",
             "MPU"
         ],
-        "device_name": "STM32F446ZE",
+        "device_name": "STM32F407VGTx",
+        "bootloader_supported": true
+
+    }, 
+    "MONSTER8": {
+        "inherits": ["MCU_STM32F4"],
+        "extra_labels_add": [
+            "STM32F4",
+            "STM32F407",
+            "STM32F407xE",
+            "STM32F407VE"
+        ],
+        "macros_add": [
+            "STM32F407xx"
+        ],
+        "supported_toolchains": ["ARM", "uARM", "GCC_ARM", "IAR"],
+
+        "overrides": { "lse_available": 0 ,
+        "clock_source": "USE_PLL_HSE_XTAL|USE_PLL_HSI"},
+        "device_has_add": [
+            "ANALOGOUT",
+            "CAN",
+            "SERIAL_ASYNCH",
+            "TRNG",
+            "MPU"
+        ],
+        "device_name": "STM32F407VETx"
+
+    },
+    "ROBIN_3": {
+        "inherits": ["MCU_STM32F4"],
+        "extra_labels_add": [
+            "STM32F4",
+            "STM32F407",
+            "STM32F407xE",
+            "STM32F407VE"
+        ],
+        "macros_add": [
+            "STM32F407xx"
+        ],
+        "supported_toolchains": ["ARM", "uARM", "GCC_ARM", "IAR"],
+
+        "overrides": { "lse_available": 0 ,
+        "clock_source": "USE_PLL_HSE_XTAL|USE_PLL_HSI"},
+        "device_has_add": [
+            "ANALOGOUT",
+            "CAN",
+            "SERIAL_ASYNCH",
+            "TRNG",
+            "MPU"
+        ],
+        "device_name": "STM32F407VETx"
+     
+    },
+    "OCTOPUS_429": {
+        "inherits": ["MCU_STM32F4"],
+        "core": "Cortex-M4F",
+        "extra_labels_add": [
+            "STM32F4",
+            "STM32F429",
+            "STM32F429xG"
+          
+        ],
+           "macros_add": [
+            "STM32F429xx"],
+        "supported_toolchains": ["ARM", "uARM", "GCC_ARM", "IAR"],
+
+        "overrides": { "lse_available": 0 ,
+        "clock_source": "USE_PLL_HSE_XTAL|USE_PLL_HSI"},
+        "device_has_add": [
+            "ANALOGOUT",
+            "CAN",
+            "SERIAL_ASYNCH",
+            "TRNG",
+            "MPU"
+        ],
+               "device_has_remove": [
+        "FLASH"
+        ],
+        "device_name": "STM32F429ZGTx",
         "bootloader_supported": true
     },
-    "BLACK_F407VE": {
-        "inherits": ["ARCH_MAX"]
-    },
-    "ROBIN_E3": {
-        "inherits": ["FAMILY_STM32"],
-        "core": "Cortex-M3",
+    "OCTOPUS_446": {
+        "inherits": ["MCU_STM32F4"],
+        "core": "Cortex-M4F",
         "extra_labels_add": [
-            "STM32F1", 
-            "STM32F103xC", 
-            "STM32F103RC"
+            "STM32F4", 
+            "STM32F446xE", 
+            "STM32F446ZE"],
+        "macros_add": [
+            "STM32F446xx"
         ],
-        "supported_toolchains": ["ARMC6"],
-        "config": {
-            "clock_source": {
-                "help": "Mask value : USE_PLL_HSE_EXTC | USE_PLL_HSE_XTAL | USE_PLL_HSI",
-                "value": "USE_PLL_HSE_EXTC|USE_PLL_HSE_XTAL|USE_PLL_HSI",
-                "macro_name": "CLOCK_SOURCE"
+        "supported_toolchains": ["ARM", "uARM", "GCC_ARM", "IAR"],
+
+        "config": {     "hse_value": {
+                "help": "HSE default value is 8MHz in stm32g4xx_hal_conf.h",
+                "value": "12000000",
+                "macro_name": "HSE_VALUE"
             }
+     
         },
+         "overrides": { "lse_available": 0 ,
+            "clock_source":  "USE_PLL_HSE_XTAL"
+         },
         "device_has_add": [
-            "CAN",
+            "ANALOGOUT",
             "SERIAL_ASYNCH",
-            "FLASH",
-            "CRC",
-            "SD",
-            "PWM"
+            "MPU"
         ],
-        "device_has_remove": ["LPTICKER"],
-        "overrides": {
-            "tickless-from-us-ticker": true
+        "device_name": "STM32F446ZETx",
+        "bootloader_supported": true
+    },
+    "SPIDER": {
+        "inherits": ["MCU_STM32F4"],
+        "core": "Cortex-M4F",
+        "extra_labels_add": [
+            "STM32F4", 
+            "STM32F446xE", 
+            "STM32F446VE"],
+        "macros_add": [
+            "STM32F446xx"
+        ],
+        "supported_toolchains": ["ARM", "uARM", "GCC_ARM", "IAR"],
+
+        "config": {     "hse_value": {
+                "help": "HSE default value is 8MHz in stm32g4xx_hal_conf.h",
+                "value": "12000000",
+                "macro_name": "HSE_VALUE"
+            }
+     
         },
-        "device_name": "STM32F103RC",
-		"bootloader_supported": true
+         "overrides": { "lse_available": 0 ,
+            "clock_source":  "USE_PLL_HSE_XTAL"
+         },
+        "device_has_add": [
+            "ANALOGOUT",
+            "SERIAL_ASYNCH",
+            "MPU"
+        ],
+        "device_name": "STM32F446VETx",
+        "bootloader_supported": true
+        
     },
     "SKR_MINI_E3": {
-        "inherits": ["FAMILY_STM32"],
+        "inherits": ["MCU_STM32F1"],
+        "c_lib": "std",
         "core": "Cortex-M3",
-        "extra_labels_add": [
-            "STM32F1", 
-            "STM32F103xC", 
-            "STM32F103RC"
-        ],
+        "extra_labels_add": ["STM32F103xC"],
+        "macros_add": ["STM32F103xE"],
         "supported_toolchains": ["ARMC6"],
-        "config": {
-            "clock_source": {
-                "help": "Mask value : USE_PLL_HSE_EXTC | USE_PLL_HSE_XTAL | USE_PLL_HSI",
-                "value": "USE_PLL_HSE_EXTC|USE_PLL_HSE_XTAL|USE_PLL_HSI",
-                "macro_name": "CLOCK_SOURCE"
-            }
-        },
+
         "device_has_add": [
             "CAN",
             "SERIAL_ASYNCH",
@@ -180,11 +245,14 @@
             "SD",
             "PWM"
         ],
-        "device_has_remove": ["LPTICKER"],
+
         "overrides": {
-            "tickless-from-us-ticker": true
+            "tickless-from-us-ticker": true,
+            "clock_source": "USE_PLL_HSE_XTAL|USE_PLL_HSI"
         },
         "device_name": "STM32F103RC",
 		"bootloader_supported": true
     }
+
+
 }

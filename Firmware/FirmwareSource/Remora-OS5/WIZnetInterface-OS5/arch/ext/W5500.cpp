@@ -165,7 +165,8 @@ void WIZnet_Chip::reset()
     reset_pin = 0;
     wait_us(500); // 500us (w5500)
     reset_pin = 1;
-    wait_ms(400); // 400ms (w5500)
+    //wait_ms(400); // 400ms (w5500)
+    wait_us(400000); // 400ms (w5500)
 #if defined(USE_WIZ550IO_MAC)
     // write MAC address inside the WZTOE MAC address register
     reg_wr_mac(SHAR, mac);
@@ -484,9 +485,11 @@ void WIZnet_Chip::ethernet_set_link(int speed, int duplex) {
         val = (((speed&0x01)<<1)+ (duplex&0x01))<<3; 
     }
     setPHYCFGR((uint8_t)(PHYCFGR_RST&(PHYCFGR_OPMD|val)));
-    wait(0.2);
+    //wait(0.2);
+    wait_us(200000);
     setPHYCFGR((uint8_t)((~PHYCFGR_RST)|(PHYCFGR_OPMD|val)));
-    wait(0.2);
+    //wait(0.2);
+    wait_us(200000);
 }
 
     void WIZnet_Chip::reg_rd_mac(uint16_t addr, uint8_t* data) {

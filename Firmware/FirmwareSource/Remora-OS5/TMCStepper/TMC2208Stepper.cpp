@@ -38,7 +38,7 @@ void TMC2208Stepper::begin() {
     pdn_disable(true);
     mstep_reg_select(true);
     //Wait to initialize
-    wait_ms(replyDelay);
+    wait_us(replyDelay);
 
 }
 
@@ -165,7 +165,7 @@ void TMC2208Stepper::write(uint8_t addr, uint32_t regVal) {
 
     //delay(replyDelay);
     //ThisThread::sleep_for(150);
-    wait_ms(5);
+    wait_us(5000);
 }
 
 uint64_t TMC2208Stepper::_sendDatagram(uint8_t datagram[], const uint8_t len, uint16_t timeout) {
@@ -249,7 +249,7 @@ uint32_t TMC2208Stepper::read(uint8_t addr) {
 
 //        delay(replyDelay);
         //ThisThread::sleep_for(replyDelay);
-        wait_ms(5);
+        wait_us(5000);
 
         CRCerror = false;
         uint8_t out_datagram[] = {

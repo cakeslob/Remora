@@ -182,7 +182,8 @@ const char * IP_Gateway =       "10.10.10.1";
 #define SSEL0               PB_6
 
 SPI spi(MOSI0, MISO0, SCK0); // mosi, miso, sclk
-WIZnetInterface eth(&spi, SSEL0, PA_10); // spi, cs, reset    
+//WIZnetInterface eth(&spi, SSEL0, PA_10); // spi, cs, reset    
+WIZnetInterface eth(&spi, SSEL0, PC_4); // spi, cs, reset 
 WIZnet_UDPSocket udp;
 Endpoint server;
 

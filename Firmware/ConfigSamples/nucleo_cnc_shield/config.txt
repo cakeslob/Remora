@@ -1,0 +1,160 @@
+{
+	"Board": "Nucleo with CNC Shield",
+	"Modules":[
+	{
+	"Thread": "Servo",
+	"Type": "Reset Pin",
+		"Comment":			"Reset pin",
+		"Pin":				"PB_2"
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"X DRIVER0 - Joint 0 step generator",
+		"Joint Number":		0,
+		"Step Pin": 		"PA_10",
+		"Direction Pin": 	"PB_4",
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"Y DRIVER1 - Joint 1 step generator",
+		"Joint Number":		1,
+		"Step Pin": 		"PB_3",
+		"Direction Pin": 	"PB_10",
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"Z DRIVER2 - Joint 2 step generator",
+		"Joint Number":		2,
+		"Step Pin": 		"PB_5",
+		"Direction Pin": 	"PA_8",
+	},
+	{
+	"Thread": "Base",
+	"Type": "Stepgen",
+		"Comment":			"A DRIVER3 - Joint 3 step generator",
+		"Joint Number":		3,
+		"Step Pin": 		"PA_6",
+		"Direction Pin": 	"PA_5",
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"X LIMIT",
+		"Pin":				"PC_7",
+		"Mode":				"Input",
+		"Data Bit":			0
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"Y LIMIT",
+		"Pin":				"PB_6",
+		"Mode":				"Input",
+		"Data Bit":			1
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"Z LIMIT",
+		"Pin":				"PA_7",
+		"Mode":				"Input",
+		"Data Bit":			2
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"COOL EN",
+		"Pin":				"PB_0",
+		"Mode":				"Input",
+		"Data Bit":			3
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"ABORT",
+		"Pin":				"PA_0",
+		"Mode":				"Input",
+		"Data Bit":			4
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"HOLD",
+		"Pin":				"PA_1",
+		"Mode":				"Input",
+		"Data Bit":			5
+	},
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"RESUME",
+		"Pin":				"PA_4",
+		"Mode":				"Input",
+		"Data Bit":			6
+	},
+	{
+    "Thread": "Servo",
+    "Type": "Digital Pin",
+            "Comment":                      "STEPPER ENABLE",
+            "Pin":                          "PA_9",
+            "Mode":                         "Output",
+            "Modifier":                     "Pull None",
+            "Invert":                       "False",
+            "Data Bit":                     0
+    	},
+ 	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"Spindle Run",
+		"Pin":				"PC_8",
+		"Mode":				"Output",
+		"Modifier":                     "Pull Up",
+		"Data Bit":			1
+	},	
+	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"Spindle Dir",
+		"Pin":				"PC_6",
+		"Mode":				"Output",
+		"Data Bit":			2
+	},	
+	{
+	"Thread": "Base",
+	"Type": "Encoder",
+		"Comment":			"Encoder X",
+		"PV[i]":			0,
+		"ChA Pin":			"PC_10",
+		"ChB Pin":			"PC_12"
+	},
+	{
+	"Thread": "Base",
+	"Type": "Encoder",
+		"Comment":			"Encoder Y",
+		"PV[i]":			1,
+		"ChA Pin":			"PC_11",
+		"ChB Pin":			"PD_2"
+	},
+	{
+	"Thread": "Base",
+	"Type": "Encoder",
+		"Comment":			"Encoder Z",
+		"PV[i]":			2,
+		"ChA Pin":			"PC_2",
+		"ChB Pin":			"PC_3"
+	},
+	{
+    "Thread": "Servo",
+    "Type": "QEI",
+            "Comment":                      "Spindle encoder",
+            "Modifier":                     "Pull Up",
+            "PV[i]":                        5,
+            "Data Bit":                     7,
+            "Enable Index":                 "True"
+   	 }
+
+	]
+}

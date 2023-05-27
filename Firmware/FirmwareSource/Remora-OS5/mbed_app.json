@@ -27,9 +27,9 @@
             "platform.stdio-baud-rate": 115200,
             "target.features_add": ["STORAGE"],
             "target.components_add" : ["SD"],
-            "sd.SPI_MOSI": "PA_7",
-            "sd.SPI_MISO": "PA_6",
-            "sd.SPI_CLK":  "PA_4",
+            "sd.SPI_MOSI": "PB_15",
+            "sd.SPI_MISO": "PB_14",
+            "sd.SPI_CLK":  "PB_13",
             "sd.SPI_CS":   "PB_5"
         },
 

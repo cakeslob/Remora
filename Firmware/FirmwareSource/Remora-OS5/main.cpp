@@ -131,24 +131,9 @@ volatile uint16_t* ptrOutputs;
     SDIOBlockDevice blockDevice;
     //RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
 
-#elif defined TARGET_MONSTER8
-    SDBlockDevice blockDevice(PC_12, PC_11, PC_10, PC_9);  // mosi, miso, sclk, cs
-    RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
-
-#elif defined TARGET_ROBIN_E3
-    SDBlockDevice blockDevice(PB_15, PB_14, PB_13, PA_15);  // mosi, miso, sclk, cs
-    RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
-
-#elif defined TARGET_SKR_MINI_E3
-    SDBlockDevice blockDevice(PA_7, PA_6, PA_5, PA_4);  // mosi, miso, sclk, cs
-    RemoraComms comms(ptrRxData, ptrTxData, SPI1, PC_1);    // use PC_1 as "slave select"
-
-#elif defined TARGET_SPIDER
-    SDBlockDevice blockDevice(PA_7, PA_6, PA_5, PA_4);  // mosi, miso, sclk, cs
-    RemoraComms comms(ptrRxData, ptrTxData, SPI1, PC_6);    // use PC_6 as "slave select"
 
 #elif defined TARGET_NUCLEO_F446RE 
-    SDBlockDevice blockDevice(PA_7, PA_6, PA_5, PB_5);  // mosi, miso, sclk, cs
+    SDBlockDevice blockDevice(PB_15, PB_14, PB_13, PB_5);  // mosi, miso, sclk, cs
     //RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);    // use PC_1 as "slave select"
 
 
@@ -176,14 +161,14 @@ const char * IP_Addr    =       "10.10.10.10";
 const char * IP_Subnet  =       "255.255.255.0";
 const char * IP_Gateway =       "10.10.10.1";
 
-#define MOSI0               PA_7           
-#define MISO0               PA_6
-#define SCK0                PA_5
-#define SSEL0               PB_6
+#define MOSI0               PB_15        // RED  
+#define MISO0               PB_14        // ORANGE
+#define SCK0                PB_13        // GREEN
+#define SSEL0               PB_6         // YELLOW 
 
 SPI spi(MOSI0, MISO0, SCK0); // mosi, miso, sclk
 //WIZnetInterface eth(&spi, SSEL0, PA_10); // spi, cs, reset    
-WIZnetInterface eth(&spi, SSEL0, PC_4); // spi, cs, reset 
+WIZnetInterface eth(&spi, SSEL0, PB_2); // spi, cs, reset 
 WIZnet_UDPSocket udp;
 Endpoint server;
 

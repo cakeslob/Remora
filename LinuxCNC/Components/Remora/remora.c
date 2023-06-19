@@ -687,7 +687,9 @@ void update_freq(void *arg, long period)
 		// calculate frequency limit
 		//max_freq = PRU_BASEFREQ/(4.0); 			//limit of DDS running at 80kHz
 		//max_freq = PRU_BASEFREQ/(2.0); 	
-		max_freq = PRU_base_freq/(2.0);
+		//max_freq = PRU_base_freq/(2.0);
+		max_freq = PRU_base_freq; // step pulses now happen in a single base thread interval
+
 
 		// check for user specified frequency limit parameter
 		if (data->maxvel[i] <= 0.0)

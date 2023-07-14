@@ -100,7 +100,7 @@ PWMPinConfig PWMConfigs[] = {{"Spindle PWM", "PC_6"}};
 BlinkPinConfig BlinkConfigs[] = {};    
 
 
-const char* PRU_Reset_Pin = "PB_4";
+const char* PRU_Reset_Pin = "PB_2";
 
 
  

@@ -6,11 +6,13 @@ The configuration is for 4 stepgen, 4 encoders, 7 input, 2 output and 1 pwm. It 
 - if you wish to change the pinout, you must configure it in this file, and them recompile 
 - Firmware premade bin file is located in /Firmware/FirmwareBin/NUCLEO_F446ZE/firmware.bin
 
+# note: for this to work on Nucleo-144 F446ZE, solder bridge 118 must be removed
+
 
 Documentation here 
 https://github.com/cakeslob/Remora-docs/blob/nucleo/docs/source/hardware/nucleo446.rst
 
-<img src="/nucleo446_pi144.png" >
+<img src="/NUC_CNC_pi144.png" >
 
 # Remora
 

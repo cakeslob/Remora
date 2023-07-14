@@ -14,7 +14,8 @@
              "platform.stdio-baud-rate": 115200
         },
         "NUCLEO_F446ZE": {
-             "platform.stdio-baud-rate": 115200
+             "platform.stdio-baud-rate": 115200,
+             "target.device_has_remove": ["USBDEVICE"]
         }
     }
 }

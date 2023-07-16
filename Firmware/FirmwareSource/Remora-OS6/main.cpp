@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <cstdio>
 #include <cerrno>
 #include <string> 
-#include "FATFileSystem.h"
+/*#include "FATFileSystem.h"
 
 #if defined TARGET_LPC176X || TARGET_STM32F1 ||  TARGET_MONSTER8 || TARGET_ROBIN_3 || TARGET_MANTA8
 #include "SDBlockDevice.h"
@@ -31,9 +31,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #elif defined TARGET_SPIDER 
 //#include "SDBlockDevice.h"
 #include "board_config.h"
-#elif defined TARGET_NUCLEO_F446RE
+*/
+#if defined TARGET_NUCLEO_F446RE 
 #include "board_config.h"
-#elif defined TARGET_RUMBA32
+
+#elif  TARGET_NUCLEO_F446ZE
+#include "board_config.h"
+
+#elif  TARGET_BLUEPILL
 #include "board_config.h"
 
 #endif
@@ -128,45 +133,16 @@ volatile uint16_t* ptrOutputs;
 ************************************************************************/
 
 // SD card access and Remora communication protocol
-#if defined TARGET_SKRV1_4
-    SDBlockDevice blockDevice(P0_9, P0_8, P0_7, P0_6);  // mosi, miso, sclk, cs
-    RemoraComms comms(ptrRxData, ptrTxData);
-
-#elif defined TARGET_SKRV2 || TARGET_OCTOPUS_446 || TARGET_BLACK_F407VE || TARGET_OCTOPUS_429 || TARGET_SKRV3
-    SDIOBlockDevice blockDevice;
-    RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
-
-#elif defined TARGET_MONSTER8
-    SDBlockDevice blockDevice(PC_12, PC_11, PC_10, PC_9);  // mosi, miso, sclk, cs
-    RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
-
-#elif defined TARGET_ROBIN_3
-    SDBlockDevice blockDevice(PC_12, PC_11, PC_10, PC_9);  // mosi, miso, sclk, cs
-    RemoraComms comms(ptrRxData, ptrTxData, SPI1, PE_10);  //use PE_10 as "slave select"
-
-#elif defined TARGET_ROBIN_E3
-    SDBlockDevice blockDevice(PB_15, PB_14, PB_13, PA_15);  // mosi, miso, sclk, cs
-    RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
-
-#elif defined TARGET_SKR_MINI_E3
-    SDBlockDevice blockDevice(PA_7, PA_6, PA_5, PA_4);  // mosi, miso, sclk, cs
-    RemoraComms comms(ptrRxData, ptrTxData, SPI1, PC_1);    // use PC_1 as "slave select"
-
-#elif defined TARGET_SPIDER
-   // SDBlockDevice blockDevice(PA_7, PA_6, PA_5, PA_4);  // mosi, miso, sclk, cs
-    RemoraComms comms(ptrRxData, ptrTxData, SPI1, PC_6);    // use PC_6 as "slave select"
-
-
-#elif defined TARGET_NUCLEO_F446RE
+#if defined TARGET_NUCLEO_F446RE || TARGET_NUCLEO_F446ZE
+//#if defined TARGET_NUCLEO_F446RE 
     RemoraComms comms(ptrRxData, ptrTxData, SPI2, PB_1);
 
-#elif defined TARGET_RUMBA32
+//#elif defined TARGET_NUCLEO_F446ZE
+  //  RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
+
+#elif defined TARGET_BLUEPILL
     RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
 
-
-#elif defined TARGET_MANTA8
-    SDBlockDevice blockDevice(PA_7, PA_6, PA_5, PA_8);  // mosi, miso, sclk, cs
-    RemoraComms comms(ptrRxData, ptrTxData, SPI1, PB_12);    // use PB_12 as "slave select"
 
 #endif
 
@@ -174,7 +150,7 @@ volatile uint16_t* ptrOutputs;
 Watchdog& watchdog = Watchdog::get_instance();
 
 // Json configuration file stuff
-FATFileSystem fileSystem("fs");
+//FATFileSystem fileSystem("fs");
 FILE *jsonFile;
 string strJson;
 DynamicJsonDocument doc(JSON_BUFF_SIZE);

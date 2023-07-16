@@ -10,123 +10,22 @@
     "artifact_name": "firmware",
 
     "target_overrides": {
+        
+      "BLUEPILL": {
+            "platform.stdio-baud-rate"          : 115200,
+            "platform.stdio-convert-newlines"   : true,
+            "platform.stdio-buffered-serial"    : true,
+            "platform.stdio-flush-at-exit"      : true,
+            "target.stdio_uart_tx": "PA_9",
+            "target.stdio_uart_rx": "PA_10",
+            "target.default_lib": "std"
+        },
         "NUCLEO_F446RE": {
              "platform.stdio-baud-rate": 115200
         },
-        "LPC1769": {
-            "target.mbed_app_start": "0x4000",
-            "platform.stdio-baud-rate": 115200,
-            "target.features_add": ["STORAGE"],
-            "target.components_add" : ["SD"]
-        },
-        
-        "MANTA8": {
-            "target.mbed_app_start": "0x08002000",
-            "platform.stdio-baud-rate": 115200,
-            "target.stdio_uart_tx": "PE_8",
-            "target.stdio_uart_rx": "PE_9",
-            "target.c_lib": "std",
-            "target.features_add": ["STORAGE"],
-            "sd.SPI_MOSI": "PA_7",
-            "sd.SPI_MISO": "PA_6",
-            "sd.SPI_CLK":  "PA_4",
-            "sd.SPI_CS":   "PA_8",
-            "target.components_add" : ["SD"]
-        },
-        "SKRV3": {
-            "target.mbed_app_start": "0x08020000",
-            "platform.stdio-baud-rate": 115200,
-            "target.stdio_uart_tx": "PA_9",
-            "target.stdio_uart_rx": "PA_10",
-            "target.features_add": ["STORAGE"]
-        },
-
-        "SKRV2": {
-            "target.mbed_app_start": "0x08008000",
-            "platform.stdio-baud-rate": 115200,
-            "target.stdio_uart_tx": "PA_9",
-            "target.stdio_uart_rx": "PA_10",
-            "target.features_add": ["STORAGE"]
-        },
-        "MONSTER8": {
-      
-            "platform.stdio-baud-rate": 115200,
-            "target.stdio_uart_tx": "PA_9",
-            "target.stdio_uart_rx": "PA_10",
-            "target.features_add": ["STORAGE"],
-            "sd.SPI_MOSI": "PC_12",
-            "sd.SPI_MISO": "PC_11",
-            "sd.SPI_CLK":  "PC_10",
-            "sd.SPI_CS":   "PC_9",
-            "target.components_add" : ["SD"]
-        },
-        "ROBIN_3": {
-      
-            "platform.stdio-baud-rate": 115200,
-            "target.stdio_uart_tx": "PA_9",
-            "target.stdio_uart_rx": "PA_10",
-            "target.features_add": ["STORAGE"],
-            "sd.SPI_MOSI": "PC_12",
-            "sd.SPI_MISO": "PC_11",
-            "sd.SPI_CLK":  "PC_10",
-            "sd.SPI_CS":   "PC_9",
-            "target.components_add" : ["SD"]
-        },
-        "OCTOPUS_429": {
-            "target.mbed_app_start": "0x08008000",
-            "platform.stdio-baud-rate": 115200,
-            "target.stdio_uart_tx": "PA_9",
-            "target.stdio_uart_rx": "PA_10",
-            "target.features_add": ["STORAGE"]
-        },
-        "RUMBA32": {
-            "platform.stdio-baud-rate": 115200,
-            "target.stdio_uart_tx": "PA_9",
-            "target.stdio_uart_rx": "PA_10"
-        },
-        "SPIDER": {
-           "target.mbed_app_start": "0x08008000",
-            "platform.stdio-baud-rate": 115200,
-            "target.stdio_uart_tx": "PA_9",
-            "target.stdio_uart_rx": "PA_10",
-            "target.features_add": ["STORAGE"],
-            "sd.SPI_MOSI": "PA_7",
-            "sd.SPI_MISO": "PA_6",
-            "sd.SPI_CLK":  "PA_5",
-            "sd.SPI_CS":   "PA_4",
-            "target.components_add" : ["SD"]
-        },
-        "OCTOPUS_446": {
-            "target.mbed_app_start": "0x08008000",
-            "platform.stdio-baud-rate": 115200,
-            "target.stdio_uart_tx": "PA_9",
-            "target.stdio_uart_rx": "PA_10",
-            "target.features_add": ["STORAGE"]
-        },
-        "BLACK_F407VE": {
-            "platform.stdio-baud-rate": 115200,
-            "target.stdio_uart_tx": "PA_9",
-            "target.stdio_uart_rx": "PA_10",
-            "target.features_add": ["STORAGE"]
-        },
-        "ROBIN_E3": {
-            "platform.stdio-baud-rate": 115200,
-            "target.stdio_uart_tx": "PA_9",
-            "target.stdio_uart_rx": "PA_10",
-            "target.features_add": ["STORAGE"],
-            "target.components_add" : ["SD"]
-        }        ,
-        "SKR_MINI_E3": {
-            "target.mbed_app_start": "0x08007000",
-            "platform.stdio-baud-rate": 115200,
-            "target.stdio_uart_tx": "PA_9",
-            "target.stdio_uart_rx": "PA_10",
-            "target.features_add": ["STORAGE"],
-            "sd.SPI_MOSI": "PA_7",
-            "sd.SPI_MISO": "PA_6",
-            "sd.SPI_CLK":  "PA_5",
-            "sd.SPI_CS":   "PA_4",
-            "target.components_add" : ["SD"]
+        "NUCLEO_F446ZE": {
+             "platform.stdio-baud-rate": 115200,
+             "target.device_has_remove": ["USBDEVICE"]
         }
     }
 }

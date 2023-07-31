@@ -27,7 +27,12 @@
              "target.default_lib": "std"
         },
         "NUCLEO_F401RE": {
-             "platform.stdio-baud-rate": 115200
+             "platform.stdio-baud-rate": 115200,
+            "platform.stdio-convert-newlines"   : true,
+            "platform.stdio-buffered-serial"    : true,
+            "platform.stdio-flush-at-exit"      : true,
+            "platform.stdio-minimal-console-only": true,
+            "target.default_lib": "std"
         },
         "NUCLEO_F446RE": {
              "platform.stdio-baud-rate": 115200

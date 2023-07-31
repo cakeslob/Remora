@@ -46,11 +46,11 @@ void RemoraComms::init()
 
         GPIO_InitTypeDef GPIO_InitStruct;
 
-        /**SPI1 GPIO Configuration
-        PA4     ------> SPI1_NSS
-        PA5     ------> SPI1_SCK
-        PA6     ------> SPI1_MISO
-        PA7     ------> SPI1_MOSI
+           /**SPI1 GPIO Configuration
+        PA4     ------> SPI1_NSS (YELLOW)
+        PA5     ------> SPI1_SCK (GREEN)
+        PA6     ------> SPI1_MISO (ORANGE)
+        PA7     ------> SPI1_MOSI (RED)
         */
 
         GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_7;
@@ -134,6 +134,101 @@ void RemoraComms::init()
         //NVIC_SetVector(DMA1_Channel2_IRQn, (uint32_t)&DMA1_Channel2_IRQHandler);
         //HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
     }
+    else if(this->spiHandle.Instance == SPI2)
+    {
+        printf("Initialising SPI2 slave\n");
+
+        GPIO_InitTypeDef GPIO_InitStruct;
+
+
+        /**SPI2 GPIO Configuration
+        PB12     ------> SPI2_NSS (YELLOW)
+        PB13     ------> SPI2_SCK (GREEN)
+        PB14     ------> SPI2_MISO (ORANGE)
+        PB15     ------> SPI2_MOSI (RED)
+        */
+
+        GPIO_InitStruct.Pin = GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_15;
+        GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+        GPIO_InitStruct.Pin = GPIO_PIN_14;
+        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+        __HAL_RCC_SPI2_CLK_ENABLE();
+
+        this->spiHandle.Init.Mode           = SPI_MODE_SLAVE;
+        this->spiHandle.Init.Direction      = SPI_DIRECTION_2LINES;
+        this->spiHandle.Init.DataSize       = SPI_DATASIZE_8BIT;
+        this->spiHandle.Init.CLKPolarity    = SPI_POLARITY_LOW;
+        this->spiHandle.Init.CLKPhase       = SPI_PHASE_1EDGE;
+        if (sharedSPI)
+        {
+            this->spiHandle.Init.NSS            = SPI_NSS_SOFT;
+            printf("SPI is shared with SD card\n");
+        }
+        else
+        {
+            this->spiHandle.Init.NSS            = SPI_NSS_HARD_INPUT;
+        }
+        this->spiHandle.Init.BaudRatePrescaler        = SPI_BAUDRATEPRESCALER_2;
+        this->spiHandle.Init.FirstBit       = SPI_FIRSTBIT_MSB;
+        this->spiHandle.Init.TIMode         = SPI_TIMODE_DISABLE;
+        this->spiHandle.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+        this->spiHandle.Init.CRCPolynomial  = 10;
+
+        HAL_SPI_Init(&this->spiHandle);
+
+        if (sharedSPI)
+        {
+            // set SSI (Slave Select Internal) low, ie same as NSS going low
+             CLEAR_BIT(this->spiHandle.Instance->CR1, SPI_CR1_SSI);
+        }
+ 
+        printf("Initialising DMA for SPI2\n");
+
+        __HAL_RCC_GPIOB_CLK_ENABLE();
+        __HAL_RCC_DMA1_CLK_ENABLE();
+
+        this->hdma_spi_tx.Instance                   = DMA1_Channel5;
+        this->hdma_spi_tx.Init.Direction             = DMA_MEMORY_TO_PERIPH;
+        this->hdma_spi_tx.Init.PeriphInc             = DMA_PINC_DISABLE;
+        this->hdma_spi_tx.Init.MemInc                = DMA_MINC_ENABLE;
+        this->hdma_spi_tx.Init.PeriphDataAlignment   = DMA_PDATAALIGN_BYTE;
+        this->hdma_spi_tx.Init.MemDataAlignment      = DMA_MDATAALIGN_BYTE;
+        this->hdma_spi_tx.Init.Mode                  = DMA_CIRCULAR;
+        //this->hdma_spi_tx.Init.Mode                  = DMA_NORMAL;
+        this->hdma_spi_tx.Init.Priority              = DMA_PRIORITY_VERY_HIGH;
+        
+         HAL_DMA_Init(&this->hdma_spi_tx);
+
+        __HAL_LINKDMA(&this->spiHandle, hdmatx, this->hdma_spi_tx);
+
+        //HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 0, 0);
+        ///NVIC_SetVector(DMA1_Channel3_IRQn, (uint32_t)&DMA1_Channel3_IRQHandler);
+        //HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
+
+        this->hdma_spi_rx.Instance                   = DMA1_Channel4;
+        this->hdma_spi_rx.Init.Direction             = DMA_PERIPH_TO_MEMORY;
+        this->hdma_spi_rx.Init.PeriphInc             = DMA_PINC_DISABLE;
+        this->hdma_spi_rx.Init.MemInc                = DMA_MINC_ENABLE;
+        this->hdma_spi_rx.Init.PeriphDataAlignment   = DMA_PDATAALIGN_BYTE;
+        this->hdma_spi_rx.Init.MemDataAlignment      = DMA_MDATAALIGN_BYTE;
+        this->hdma_spi_rx.Init.Mode                  = DMA_CIRCULAR;
+        //this->hdma_spi_rx.Init.Mode                  = DMA_NORMAL;
+        this->hdma_spi_rx.Init.Priority              = DMA_PRIORITY_VERY_HIGH;
+
+        HAL_DMA_Init(&this->hdma_spi_rx);
+
+        __HAL_LINKDMA(&this->spiHandle,hdmarx,this->hdma_spi_rx);
+
+        //HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 0, 0);
+        //NVIC_SetVector(DMA1_Channel2_IRQn, (uint32_t)&DMA1_Channel2_IRQHandler);
+        //HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
+    } 
 }
 
 void RemoraComms::start()

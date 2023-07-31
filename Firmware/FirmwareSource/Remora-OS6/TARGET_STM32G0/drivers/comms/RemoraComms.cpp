@@ -18,6 +18,21 @@ RemoraComms::RemoraComms(volatile rxData_t* ptrRxData, volatile txData_t* ptrTxD
         sharedSPI = false;
         HAL_NVIC_SetPriority(EXTI4_15_IRQn, 5, 0);
     }
+    
+    else if (this->interruptPin == PB_1)
+    {
+        // interrupt pin is not the NSS pin, ie the board shares the SPI bus with the SD card
+        // configure the SPI in software NSS mode and always on
+        sharedSPI = true;
+        HAL_NVIC_SetPriority(EXTI0_1_IRQn , 5, 0);
+    }
+    else if (this->interruptPin == PB_10)
+    {
+        // interrupt pin is not the NSS pin, ie the board shares the SPI bus with the SD card
+        // configure the SPI in software NSS mode and always on
+        sharedSPI = true;
+        HAL_NVIC_SetPriority(EXTI4_15_IRQn , 5, 0);
+    }
     else if (this->interruptPin == PA_15)
     {
         // interrupt pin is not the NSS pin, ie the board shares the SPI bus with the SD card
@@ -43,7 +58,7 @@ void RemoraComms::init()
         /**SPI1 GPIO Configuration
         PB12     ------> SPI2_NSS
         PB13     ------> SPI2_SCK
-        PB14     ------> SPI2_MISO
+        PB6     ------> SPI2_MISO
         PB11     ------> SPI2_MOSI
         */
 
@@ -52,7 +67,7 @@ void RemoraComms::init()
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-        GPIO_InitStruct.Pin = GPIO_PIN_14;
+        GPIO_InitStruct.Pin = GPIO_PIN_6;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);

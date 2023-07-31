@@ -40,7 +40,7 @@ struct BlinkPinConfig {
 
 //Module config
 
-#define BOARD "NUCLEO_F446RE CNC SHIELD"
+#define BOARD "NUCLEO_F401RE CNC SHIELD"
 
 //Base thread objects - Stepgens, encoders, and RC servos supported here
 //Comment, joint number, step pin, dir pin, 

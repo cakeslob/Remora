@@ -8,8 +8,7 @@ struct StepgenConfig {
     const char* Comment;
     const int JointNumber;
     const char* StepPin;
-    const char* DirectionPin;
-  
+    const char* DirectionPin;  
 }; 
 
 struct EncoderConfig {
@@ -17,8 +16,6 @@ struct EncoderConfig {
     const char* PinA;
     const char* PinB;
     const int Modifier; // OPENDRAIN, PULLUP, PULLDOWN, PULLNONE, NONE
-
-
 };
 
 struct DigitalPinConfig {
@@ -33,7 +30,6 @@ struct PWMPinConfig {
     const char* Comment;
     const char* Pin;
     const int Peroid_sp;
-
 };
 
 struct BlinkPinConfig {
@@ -44,35 +40,16 @@ struct BlinkPinConfig {
 
 //Module config
 
-#define BOARD "NUCLEO446ze"
+#define BOARD "NUCLEO_F446ZE CNC SHIELD"
 
 //Base thread objects - Stepgens, encoders, and RC servos supported here
 //Comment, joint number, step pin, dir pin, 
  
- //446
-StepgenConfig StepgenConfigs[] =   {{"Y-Axis", 0, "PB_3", "PB_10"},
-                                    {"Z-Axis", 1, "PB_5", "PA_8"}};
-                                    
-/*
+StepgenConfig StepgenConfigs[] =   {{"X-Axis", 0, "PF_15", "PE_11"}, // D2,D5
+                                    {"Y-Axis", 1, "PE_13", "PE_9"}, // D3,D6
+                                    {"Z-Axis", 2, "PF_14", "PF_13"}, // D4,D7
+                                    {"A-Axis", 3, "PA_6", "PA_5"}}; // D12,D13
 
-StepgenConfig StepgenConfigs[] =   {{"X-Axis", 0, "PA_10", "PB_4"}, 
-                                    {"Y-Axis", 1, "PB_3", "PB_10"},
-                                    {"Z-Axis", 2, "PB_5", "PA_8"},
-                                    {"A-Axis", 3, "PA_6", "PA_5"}};
-StepgenConfig StepgenConfigs[] =   {{"X-Axis", 0, "PA_10", "PB_4","PA_9" }, 
-                                    {"Y-Axis", 1, "PB_3", "PB_10","PA_9" },
-                                    {"Z-Axis", 2, "PB_5", "PA_8","PA_9" },
-                                    {"A-Axis", 3, "PA_6", "PA_5","PA_9"  }};
-/*
- 401
-StepgenConfig StepgenConfigs[] =   {{"X-Axis", 0, "PB_4", "PC_10","PA_9" }, 
-                                    {"Y-Axis", 1, "PB_10", "PB_12","PA_9" },
-                                    {"Z-Axis", 2, "PA_8", "PD_13","PA_9" },
-                                    {"A-Axis", 3, "PA_6", "PA_5","PA_9" }};
-*/
-
-
-//EncoderConfig EncoderConfigs[] = {{"X-axis", 0, "PA_13", "PA_14", PULLNONE}};
 EncoderConfig EncoderConfigs[] = {{"X-axis", "PC_10", "PC_12", PULLNONE},
                                   {"Y-axis", "PC_11", "PD_2", PULLNONE},
                                   {"Z-axis", "PC_2", "PC_3", PULLNONE}};
@@ -80,17 +57,18 @@ EncoderConfig EncoderConfigs[] = {{"X-axis", "PC_10", "PC_12", PULLNONE},
 
 //Servo thread objects - eStop, Reset Pin, Blink, Digital Pin, PWM, Temperature, Switch, QEI
 
-DigitalPinConfig DOConfigs[] = {{"STEP_ENA", "PA_9", PULLNONE, false, 0}, //Comment, pin, modifier, invert, data bit
+//Comment, pin, modifier, invert, data bit
+DigitalPinConfig DOConfigs[] = {{"STEP_ENA", "PF_12", PULLNONE, false, 0}, // D8
                                 {"AUX0", "PC_9", PULLNONE, false, 1},
                                 {"AUX1", "PC_8", PULLNONE, false, 2}};
-
-DigitalPinConfig DIConfigs[] = {{"X_LIMIT", "PC_7", PULLUP, false, 0},
-                                {"Y_LIMIT", "PB_6", PULLUP, false, 1},
-                                {"Z_LIMIT", "PA_7", PULLUP, false, 2},
-                                {"COOLANT", "PB_0", PULLUP, false, 3},
-                                {"ABORT", "PA_0", PULLUP, false, 4},
-                                {"HOLD", "PA_1", PULLUP, false, 5}};  //Comment, pin, modifier, invert, data bit
-
+//Comment, pin, modifier, invert, data bit
+DigitalPinConfig DIConfigs[] = {{"X_LIMIT", "PD_15", PULLUP, false, 0}, // D9
+                                {"Y_LIMIT", "PD_14", PULLUP, false, 1}, // D10
+                                {"Z_LIMIT", "PA_7", PULLUP, false, 2}, // D11
+                                {"ABORT", "PA_3", PULLUP, false, 3}, // A0
+                                {"HOLD", "PC_0", PULLUP, false, 4}, // A1
+                                {"RESUME", "PC_3", PULLUP, false, 5}, // A2
+                                {"COOLANT", "PF_3", PULLUP, false, 6}};  // A3
 
 
 
@@ -98,7 +76,6 @@ DigitalPinConfig DIConfigs[] = {{"X_LIMIT", "PC_7", PULLUP, false, 0},
 PWMPinConfig PWMConfigs[] = {{"Spindle PWM", "PC_6"}};
 
 BlinkPinConfig BlinkConfigs[] = {};    
-
 
 const char* PRU_Reset_Pin = "PB_2";
 

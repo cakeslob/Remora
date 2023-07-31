@@ -40,7 +40,34 @@ struct BlinkPinConfig {
 
 //Module config
 
-#define BOARD "NUCLEO_F446RE CNC SHIELD"
+#define BOARD "NUCLEO_F103RB CNC SHIELD"
+
+/*
+    ARDUINO_UNO_A0  = PA_0,
+    ARDUINO_UNO_A1  = PA_1,
+    ARDUINO_UNO_A2  = PA_4,
+    ARDUINO_UNO_A3  = PB_0,
+    ARDUINO_UNO_A4  = PC_1,
+    ARDUINO_UNO_A5  = PC_0,
+
+    ARDUINO_UNO_D0  = PA_3,
+    ARDUINO_UNO_D1  = PA_2,
+    ARDUINO_UNO_D2  = PA_10,
+    ARDUINO_UNO_D3  = PB_3,
+    ARDUINO_UNO_D4  = PB_5,
+    ARDUINO_UNO_D5  = PB_4,
+    ARDUINO_UNO_D6  = PB_10,
+    ARDUINO_UNO_D7  = PA_8,
+    ARDUINO_UNO_D8  = PA_9,
+    ARDUINO_UNO_D9  = PC_7,
+    ARDUINO_UNO_D10 = PB_6,
+    ARDUINO_UNO_D11 = PA_7,
+    ARDUINO_UNO_D12 = PA_6,
+    ARDUINO_UNO_D13 = PA_5,
+    ARDUINO_UNO_D14 = PB_9,
+    ARDUINO_UNO_D15 = PB_8,
+*/
+
 
 //Base thread objects - Stepgens, encoders, and RC servos supported here
 //Comment, joint number, step pin, dir pin, 

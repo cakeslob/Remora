@@ -142,7 +142,7 @@ volatile uint16_t* ptrOutputs;
 ************************************************************************/
 
 // SD card access and Remora communication protocol
-#if defined TARGET_NUCLEO_F446RE || TARGET_NUCLEO_F446ZE || TARGET_NUCLEO_F401RE ||  TARGET_NUCLEO_F103RB
+#if defined TARGET_NUCLEO_F446RE || TARGET_NUCLEO_F446ZE || TARGET_NUCLEO_F401RE || TARGET_NUCLEO_F103RB
 //#if defined TARGET_NUCLEO_F446RE 
     RemoraComms comms(ptrRxData, ptrTxData, SPI2, PB_1);
 
@@ -152,7 +152,7 @@ volatile uint16_t* ptrOutputs;
 #elif defined TARGET_NUCLEO_G0B1RE 
     RemoraComms comms(ptrRxData, ptrTxData, SPI2, PB_10);
 
-#elif defined TARGET_BLUEPILL
+#elif defined TARGET_BLUEPILL // || TARGET_NUCLEO_F103RB
     RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
 
 

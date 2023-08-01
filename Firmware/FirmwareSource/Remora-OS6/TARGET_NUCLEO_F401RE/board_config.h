@@ -53,6 +53,7 @@ StepgenConfig StepgenConfigs[] =   {{"X-Axis", 0, "PA_10", "PB_4"}, // D2,D5
 EncoderConfig EncoderConfigs[] = {{"X-axis", "PC_10", "PC_12", PULLNONE},
                                   {"Y-axis", "PC_11", "PD_2", PULLNONE},
                                   {"Z-axis", "PC_2", "PC_3", PULLNONE}};
+                                  
 //EncoderConfig EncoderConfigs[] = {};
 
 //Servo thread objects - eStop, Reset Pin, Blink, Digital Pin, PWM, Temperature, Switch, QEI

@@ -18,7 +18,6 @@ RemoraComms::RemoraComms(volatile rxData_t* ptrRxData, volatile txData_t* ptrTxD
         sharedSPI = false;
         HAL_NVIC_SetPriority(EXTI4_IRQn, 5, 0);
     }
-
     else if (this->interruptPin == PB_1)
     {
         // interrupt pin is not the NSS pin, ie the board shares the SPI bus with the SD card

@@ -1,7 +1,7 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
-#define PRU_BASEFREQ    	80000 //24000   // PRU Base thread ISR update frequency (hz)
+#define PRU_BASEFREQ    	40000 //24000   // PRU Base thread ISR update frequency (hz)
 #define PRU_SERVOFREQ       1000            // PRU Servo thread ISR update freqency (hz)
 #define OVERSAMPLE          3
 #define SWBAUDRATE          19200           // Software serial baud rate

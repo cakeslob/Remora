@@ -9,7 +9,6 @@ struct StepgenConfig {
     const int JointNumber;
     const char* StepPin;
     const char* DirectionPin;
-
 }; 
 
 struct EncoderConfig {
@@ -17,9 +16,8 @@ struct EncoderConfig {
     const char* PinA;
     const char* PinB;
     const int Modifier; // OPENDRAIN, PULLUP, PULLDOWN, PULLNONE, NONE
-
-
 };
+
 struct DigitalPinConfig {
     const char* Comment;
     const char* Pin;
@@ -32,7 +30,6 @@ struct PWMPinConfig {
     const char* Comment;
     const char* Pin; 
     const int Peroid_sp;
-
 };
 
 struct BlinkPinConfig {
@@ -41,10 +38,12 @@ struct BlinkPinConfig {
     const int Freq;
 };
 
-
 //Module config
 
 #define BOARD "BLUEPILL"
+
+// Base thread frequency
+uint32_t base_freq_config = 30000;
 
 //Base thread objects - Stepgens, encoders, and RC servos supported here
 

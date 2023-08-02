@@ -311,7 +311,8 @@ void static_configThreads()
 {
     printf("\n4. Config threads\n");
 
-    base_freq = PRU_BASEFREQ;
+    //base_freq = PRU_BASEFREQ;
+     base_freq = base_freq_config;
     printf("Setting BASE thread frequency to %d\n", base_freq);
    
     servo_freq = PRU_SERVOFREQ;

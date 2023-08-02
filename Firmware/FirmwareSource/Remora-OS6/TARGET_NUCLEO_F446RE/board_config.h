@@ -42,6 +42,9 @@ struct BlinkPinConfig {
 
 #define BOARD "NUCLEO_F446RE CNC SHIELD"
 
+// Base thread frequency
+uint32_t base_freq_config = 80000;
+
 //Base thread objects - Stepgens, encoders, and RC servos supported here
 //Comment, joint number, step pin, dir pin, 
  

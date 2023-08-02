@@ -68,6 +68,9 @@ struct BlinkPinConfig {
     ARDUINO_UNO_D15 = PB_8,
 */
 
+// Base thread frequency
+uint32_t base_freq_config = 30000;
+
 
 //Base thread objects - Stepgens, encoders, and RC servos supported here
 //Comment, joint number, step pin, dir pin, 
@@ -77,10 +80,12 @@ StepgenConfig StepgenConfigs[] =   {{"X-Axis", 0, "PA_10", "PB_4"}, // D2,D5
                                     {"Z-Axis", 2, "PB_5", "PA_8"},// D4,D7
                                     {"A-Axis", 3, "PA_6", "PA_5"}};// D12,D13
 
+/*
 EncoderConfig EncoderConfigs[] = {{"X-axis", "PC_10", "PC_12", PULLNONE},
                                   {"Y-axis", "PC_11", "PD_2", PULLNONE},
                                   {"Z-axis", "PC_2", "PC_3", PULLNONE}};
-//EncoderConfig EncoderConfigs[] = {};
+                                  */
+EncoderConfig EncoderConfigs[] = {};
 
 //Servo thread objects - eStop, Reset Pin, Blink, Digital Pin, PWM, Temperature, Switch, QEI
 
@@ -100,7 +105,7 @@ DigitalPinConfig DIConfigs[] = {{"X_LIMIT", "PC_7", PULLUP, false, 0}, // D9
 
 
 //PWMPinConfig PWMConfigs[] = {};        
-PWMPinConfig PWMConfigs[] = {{"Spindle PWM", "PC_6"}};
+PWMPinConfig PWMConfigs[] = {{"Spindle PWM", "PC_5"}};
 
 BlinkPinConfig BlinkConfigs[] = {};    
 

@@ -9,6 +9,62 @@
         ],
 
         "device_name": "STM32F103RB"
+    },
+      "BLACKPILL_F401CC": {
+        "inherits": [
+            "MCU_STM32F4"
+        ],
+        "macros_add": [
+            "STM32F401xC",
+            "HSE_VALUE=25000000U"
+        ],
+        "config": {
+            "clock_source_usb": {
+                "help": "As 48 Mhz clock is configured for USB, SYSCLK has to be reduced from 100 to 96 MHz",
+                "value": "0",
+                "macro_name": "CLOCK_SOURCE_USB"
+            }
+        },
+        "overrides": {
+            "lse_available": 1
+        },
+        "device_has_add": [
+            "USBDEVICE"
+        ],
+        "bootloader_supported": true,
+        "detect_code": [
+            "0740"
+        ],
+        "device_name": "MCU_STM32F401CC"
+    },
+    "BLACKPILL_F411CE": {
+        "inherits": [
+            "MCU_STM32F4"
+        ],
+         "extra_labels_add": [
+            "STM32F411xE"
+        ],
+        "macros_add": [
+            "STM32F411xE",
+            "HSE_VALUE=25000000U"
+        ],
+        "config": {
+            "clock_source_usb": {
+                "help": "As 48 Mhz clock is configured for USB, SYSCLK has to be reduced from 100 to 96 MHz",
+                "value": "0",
+                "macro_name": "CLOCK_SOURCE_USB"
+            }
+        },
+        "overrides": {
+            "lse_available": 1
+        },
+        "device_has_add": [
+            "USBDEVICE"
+        ],
+        "detect_code": [
+            "0740"
+        ],
+        "device_name": "MCU_STM32F411CE"
     }
 
 

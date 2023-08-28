@@ -13,10 +13,12 @@ QEIdriver::QEIdriver() :
 QEIdriver::QEIdriver(bool hasIndex) :
     hasIndex(hasIndex),
 //    qeiIndex(PE_13)
-    qeiIndex(PA_12)
+    //qeiIndex(PA_12)
+    qeiIndex(PB_7)
 {
     this->hasIndex = true;
-    this->irq = EXTI15_10_IRQn;
+    this->irq = EXTI9_5_IRQn;
+    //this->irq = EXTI15_10_IRQn;
     //this->irq = EXTI2_IRQn;
 
     this->init();

@@ -17,6 +17,11 @@
             "target.stdio_uart_rx": "PA_10",
             "target.default_lib": "std"
         },
+        "BLACKPILL_F411CE": {
+            "platform.stdio-baud-rate"          : 115200,
+            "target.stdio_uart_tx": "PA_9",
+            "target.stdio_uart_rx": "PA_10"
+        },
         "NUCLEO_F103RB": {
             "platform.stdio-baud-rate": 115200,
             "platform.stdio-convert-newlines"   : true,
@@ -37,6 +42,9 @@
             "platform.stdio-buffered-serial"    : true,
             "platform.stdio-flush-at-exit"      : true,
             "target.default_lib": "std"
+        },
+        "NUCLEO_F411RE": {
+             "platform.stdio-baud-rate": 115200
         },
         "NUCLEO_F446RE": {
              "platform.stdio-baud-rate": 115200

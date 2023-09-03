@@ -1,16 +1,16 @@
-# Remora Nucleo CNC shield v3.0
-This repo is for a setup using a STM Nucleo64 STM32F446RE with classic CNC shield v3.0 
-The configuration is for 4 stepgen, 4 encoders, 7 input, 2 output and 1 pwm. It is a basic configuration for the time being, using the static config from Flexi-hal.
-- SPI2 for connection to RPI4, with pins PB1, PB13, PB14 and PB15, and pin PB2 for reset
-- the pinout configuration is loacted in /Firmware/FirmwareSource/Remora-OS6/TARGET_NUCLEO_F446RE/board_config.h
+# Remora Blue/Blackpill CNC 
+This repo is for a setup using a STM Bluepill using STM32F103xx and STM Blackpill using STM32F401 and 411
+The configuration is for 3 stepgen, 1 encoders, 5 input, 2 output and 1 pwm. It is a basic configuration for the time being, using the static config from Flexi-hal.
+- SPI2 for connection to RPI4, with pins PB12, PB13, PB14 and PB15, and pin PA8 for reset
+- the pinout configuration is loacted in /Firmware/FirmwareSource/Remora-OS6/TARGET_xxx/board_config.h
 - if you wish to change the pinout, you must configure it in this file, and them recompile 
 - Firmware premade bin file is located in /Firmware/FirmwareBin/firmware.bin
 
 
-Documentation here 
+Documentation coming soon, but here is something related 
 https://github.com/cakeslob/Remora-docs/blob/nucleo/docs/source/hardware/nucleo446.rst
 
-<img src="/nucleo446_pi.png" >
+<img src="/blackpill-pinout_remp.png" >
 
 # Remora
 

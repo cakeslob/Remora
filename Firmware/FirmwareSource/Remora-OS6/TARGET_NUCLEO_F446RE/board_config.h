@@ -61,7 +61,7 @@ EncoderConfig EncoderConfigs[] = {{"X-axis", "PC_10", "PC_12", PULLNONE},
 //Servo thread objects - eStop, Reset Pin, Blink, Digital Pin, PWM, Temperature, Switch, QEI
 
 //Comment, pin, modifier, invert, data bit
-DigitalPinConfig DOConfigs[] = {{"STEP_ENA", "PA_9", PULLNONE, false, 0}, // D8
+DigitalPinConfig DOConfigs[] = {{"STEP_ENA", "PA_9", PULLUP, true, 0}, // D8
                                 {"AUX0", "PC_9", PULLNONE, false, 1},
                                 {"AUX1", "PC_8", PULLNONE, false, 2}};
  //Comment, pin, modifier, invert, data bit
@@ -71,7 +71,8 @@ DigitalPinConfig DIConfigs[] = {{"X_LIMIT", "PC_7", PULLUP, false, 0}, // D9
                                 {"ABORT", "PA_0", PULLUP, false, 3}, // A0
                                 {"HOLD", "PA_1", PULLUP, false, 4}, // A1
                                 {"RESUME", "PA_4", PULLUP, false, 5}, // A2
-                                {"COOLANT", "PB_0", PULLUP, false, 6}};  // A3
+                                {"COOLANT", "PB_0", PULLUP, false, 6},
+                                {"USER_BUTT", "PC_13", PULLUP, false, 7}};  // A3
 
 
 

@@ -90,7 +90,7 @@ EncoderConfig EncoderConfigs[] = {};
 //Servo thread objects - eStop, Reset Pin, Blink, Digital Pin, PWM, Temperature, Switch, QEI
 
 //Comment, pin, modifier, invert, data bit
-DigitalPinConfig DOConfigs[] = {{"STEP_ENA", "PA_9", PULLNONE, false, 0}, // D8
+DigitalPinConfig DOConfigs[] = {{"STEP_ENA", "PA_9", PULLUP, true, 0}, // D8
                                 {"AUX0", "PC_9", PULLNONE, false, 1},
                                 {"AUX1", "PC_8", PULLNONE, false, 2}};
  //Comment, pin, modifier, invert, data bit

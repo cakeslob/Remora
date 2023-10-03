@@ -11,6 +11,7 @@ void createStepgen()
     printf("\n%s\n",comment);
 
     int joint = module["Joint Number"];
+    const char* enable = module["Enable Pin"];
     const char* step = module["Step Pin"];
     const char* dir = module["Direction Pin"];
 
@@ -19,17 +20,31 @@ void createStepgen()
     ptrJointFeedback[joint] = &txData.jointFeedback[joint];
     ptrJointEnable = &rxData.jointEnable;
 
+    if (enable == nullptr)
+    {
     // create the step generator, register it in the thread
     Module* stepgen = new Stepgen(base_freq, joint, step, dir, STEPBIT, *ptrJointFreqCmd[joint], *ptrJointFeedback[joint], *ptrJointEnable);
     baseThread->registerModule(stepgen);
     baseThread->registerModulePost(stepgen);
+    }
+    
+    else
+    {
+        printf("  Stepgen has index at pin %s\n", enable);
+    // create the step generator, register it in the thread
+    Module* stepgen = new Stepgen(base_freq, joint, enable, step, dir, STEPBIT, *ptrJointFreqCmd[joint], *ptrJointFeedback[joint], *ptrJointEnable);
+    baseThread->registerModule(stepgen);
+    baseThread->registerModulePost(stepgen);
+    }
 }
+
+
 
 
 /***********************************************************************
                 METHOD DEFINITIONS
 ************************************************************************/
-
+// no enable
 Stepgen::Stepgen(int32_t threadFreq, int jointNumber, std::string step, std::string direction, int stepBit, volatile int32_t &ptrFrequencyCommand, volatile int32_t &ptrFeedback, volatile uint8_t &ptrJointEnable) :
 	jointNumber(jointNumber),
 	step(step),
@@ -46,6 +61,28 @@ Stepgen::Stepgen(int32_t threadFreq, int jointNumber, std::string step, std::str
 	this->mask = 1 << this->jointNumber;
 	this->isEnabled = false;
 	this->isForward = false;
+    this->hasEnable = false;
+}
+// yes enable
+Stepgen::Stepgen(int32_t threadFreq, int jointNumber, std::string enable, std::string step, std::string direction, int stepBit, volatile int32_t &ptrFrequencyCommand, volatile int32_t &ptrFeedback, volatile uint8_t &ptrJointEnable) :
+	jointNumber(jointNumber),
+	enable(enable),
+	step(step),
+	direction(direction),
+	stepBit(stepBit),
+	ptrFrequencyCommand(&ptrFrequencyCommand),
+	ptrFeedback(&ptrFeedback),
+	ptrJointEnable(&ptrJointEnable)
+{
+	this->enablePin = new Pin(this->enable, OUTPUT);			// create Pins
+	this->stepPin = new Pin(this->step, OUTPUT);
+	this->directionPin = new Pin(this->direction, OUTPUT);
+	this->DDSaccumulator = 0;
+	this->frequencyScale = (float)(1 << this->stepBit) / (float)threadFreq;
+	this->mask = 1 << this->jointNumber;
+	this->isEnabled = false;
+	this->isForward = false;
+    this->hasEnable = true;
 }
 
 
@@ -73,6 +110,9 @@ void Stepgen::makePulses()
 
 	if (this->isEnabled == true)  												// this Step generator is enables so make the pulses
 	{
+        if (this->hasEnable == true)
+            {this->enablePin->set(false); }  
+
 		this->frequencyCommand = *(this->ptrFrequencyCommand);            		// Get the latest frequency command via pointer to the data source
 		this->DDSaddValue = this->frequencyCommand * this->frequencyScale;		// Scale the frequency command to get the DDS add value
 		stepNow = this->DDSaccumulator;                           				// Save the current DDS accumulator value
@@ -99,6 +139,11 @@ void Stepgen::makePulses()
 		}
 	}
 
+	else if (this->hasEnable == true)
+
+	{
+		this->enablePin->set(true);
+	}
 
 }
 

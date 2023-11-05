@@ -1,10 +1,9 @@
 /********************************************************************
-* Description:  remora_lpc.c
-*               This file, 'remora_lpc.c', is a HAL component that
-*               provides and SPI connection to a external LPC1768 running Remora PRU firmware.
+* Description:  remora_eth.c
+*               This file, 'remora_eth.c', is a HAL component that
+*               provides an ethernet connection to a external controller
+*			    running Remora PRU Ethernet  firmware.
 *  				
-*				Initially developed for RaspberryPi -> Arduino Due.
-*				Further developed for RaspberryPi -> Smoothieboard and clones (LPC1768).
 *
 * Author: Scott Alford
 * License: GPL Version 2
@@ -13,7 +12,7 @@
 *		and portions of this code is based on stepgen.c by John Kasunich
 *		and hm2_rpspi.c by Matsche
 *
-* Copyright (c) 2021	All rights reserved.
+* Copyright (c) 2023	All rights reserved.
 *
 * Last change:
 ********************************************************************/
@@ -30,21 +29,18 @@
 #include <stdio.h>
 #include <string.h>
 
-
-// Using BCM2835 driver library by Mike McCauley, why reinvent the wheel!
-// http://www.airspayce.com/mikem/bcm2835/index.html
-// Include these in the source directory when using "halcompile --install remora_lpc.c"
-#include "bcm2835.h"
-#include "bcm2835.c"
-
-#include "remora_rpspi.h"
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
 
 
-#define MODNAME "remora_lpc"
+#include "remora_eth.h"
+
+#define MODNAME "remora_eth"
 #define PREFIX "remora"
 
 MODULE_AUTHOR("Scott Alford AKA scotta");
-MODULE_DESCRIPTION("Driver for Remora LPC1768 control board");
+MODULE_DESCRIPTION("Driver for Remora ethernet capable control board");
 MODULE_LICENSE("GPL v2");
 
 
@@ -53,11 +49,11 @@ MODULE_LICENSE("GPL v2");
 ************************************************************************/
 
 typedef struct {
-	hal_bit_t		*SPIenable;
-	hal_bit_t		*SPIreset;
+	hal_bit_t		*enable;
+	hal_bit_t		*reset;
 	hal_bit_t		*PRUreset;
-	bool			SPIresetOld;
-	hal_bit_t		*SPIstatus;
+	bool			resetOld;
+	hal_bit_t		*status;
 	hal_bit_t 		*stepperEnable[JOINTS];
 	int				pos_mode[JOINTS];
 	hal_float_t 	*pos_cmd[JOINTS];			// pin: position command (position units)
@@ -73,29 +69,30 @@ typedef struct {
 	hal_float_t		*ff1gain[JOINTS];
 	hal_float_t		*deadband[JOINTS];
 	float 			old_pos_cmd[JOINTS];		// previous position command (counts)
-	float 			old_pos_cmd_raw[JOINTS];		// previous position command (counts)
+	float 			old_pos_cmd_raw[JOINTS];	// previous position command (counts)
 	float 			old_scale[JOINTS];			// stored scale value
 	float 			scale_recip[JOINTS];		// reciprocal value used for scaling
 	float			prev_cmd[JOINTS];
-	float			cmd_d[JOINTS];					// command derivative
+	float			cmd_d[JOINTS];				// command derivative
 	hal_float_t 	*setPoint[VARIABLES];
 	hal_float_t 	*processVariable[VARIABLES];
 	hal_bit_t   	*outputs[DIGITAL_OUTPUTS];
-	hal_bit_t   	*inputs[DIGITAL_INPUTS];
+	hal_bit_t   	*inputs[DIGITAL_INPUTS*2];
+	hal_bit_t   	*NVMPGinputs[NVMPG_INPUTS];
 } data_t;
 
 static data_t *data;
 
 
-//#pragma pack(push, 1)
+#pragma pack(push, 1)
 
 typedef union
 {
-  // this allow structured access to the outgoing SPI data without having to move it
-  // this is the same structure as the PRU rxData structure
+  // this allow structured access to the outgoing data without having to move it
+  // this is the same structure as the Remora rxData structure
   struct
   {
-    uint8_t txBuffer[SPIBUFSIZE];
+    uint8_t txBuffer[BUFFER_SIZE];
   };
   struct
   {
@@ -103,7 +100,7 @@ typedef union
     int32_t jointFreqCmd[JOINTS];
     float 	setPoint[VARIABLES];
 	uint8_t jointEnable;
-	uint16_t outputs;
+	uint32_t outputs;
     uint8_t spare0;
   };
 } txData_t;
@@ -111,22 +108,23 @@ typedef union
 
 typedef union
 {
-  // this allow structured access to the incoming SPI data without having to move it
-  // this is the same structure as the PRU txData structure
+  // this allow structured access to the incoming data without having to move it
+  // this is the same structure as the Remora txData structure
   struct
   {
-    uint8_t rxBuffer[SPIBUFSIZE];
+    uint8_t rxBuffer[BUFFER_SIZE];
   };
   struct
   {
     int32_t header;
     int32_t jointFeedback[JOINTS];
     float 	processVariable[VARIABLES];
-    uint16_t inputs;
+    uint32_t inputs;
+	uint16_t NVMPGinputs;
   };
 } rxData_t;
 
-//#pragma pack(pop)
+#pragma pack(pop)
 
 static txData_t txData;
 static rxData_t rxData;
@@ -145,32 +143,37 @@ static int64_t 		accum[JOINTS] = { 0 };
 static int32_t 		old_count[JOINTS] = { 0 };
 static int32_t		accum_diff = 0;
 
-static int 			reset_gpio_pin = 25;				// RPI GPIO pin number used to force watchdog reset of the PRU 
+static int 			reset_gpio_pin = 25;				// debug pin
 
 typedef enum CONTROL { POSITION, VELOCITY, INVALID } CONTROL;
 char *ctrl_type[JOINTS] = { "p" };
 RTAPI_MP_ARRAY_STRING(ctrl_type,JOINTS,"control type (pos or vel)");
 
-enum CHIP { LPC, STM } chip;
-char *chip_type = { "LPC" }; //default to LPC
-RTAPI_MP_STRING(chip_type, "PRU chip type; LPC or STM");
-
-int SPI_clk_div = -1;
-RTAPI_MP_INT(SPI_clk_div, "SPI clock divider");
-
 int PRU_base_freq = -1;
 RTAPI_MP_INT(PRU_base_freq, "PRU base thread frequency");
 
+#define DST_PORT 27181
+#define SRC_PORT 27181
+#define SEND_TIMEOUT_US 10
+#define RECV_TIMEOUT_US 10
+#define READ_PCK_DELAY_NS 10000
+
+static int udpSocket;
+static int errCount;
+struct sockaddr_in dstAddr, srcAddr;
+struct hostent *server;
+static const char *dstAddress = "10.10.10.10";
 
 /***********************************************************************
 *                  LOCAL FUNCTION DECLARATIONS                         *
 ************************************************************************/
-static int rt_bcm2835_init(void);
+
+static int UDP_init(void);
 
 static void update_freq(void *arg, long period);
-static void spi_write();
-static void spi_read();
-static void spi_transfer();
+static void pru_write();
+static void pru_read();
+static void pru_transfer(int txSize, int rxSize);
 static CONTROL parse_ctrl_type(const char *ctrl);
 
 
@@ -194,23 +197,7 @@ int rtapi_app_main(void)
 		}
     }
 	
-	// check to see PRU chip type has been set at the command line
-	if (!strcmp(chip_type, "LPC") || !strcmp(chip_type, "lpc"))
-	{
-		rtapi_print_msg(RTAPI_MSG_INFO,"PRU: Chip type set to LPC\n");
-		chip = LPC;
-	}
-	else if (!strcmp(chip_type, "STM") || !strcmp(chip_type, "stm"))
-	{
-		rtapi_print_msg(RTAPI_MSG_INFO,"PRU: Chip type set to STM\n");
-		chip = STM;
-	}
-	else
-	{
-		rtapi_print_msg(RTAPI_MSG_ERR, "ERROR: PRU chip type (must be 'LPC' or 'STM')\n");
-		return -1;
-	}
-	
+
 	// check to see if the PRU base frequency has been set at the command line
 	if (PRU_base_freq != -1)
 	{
@@ -224,7 +211,6 @@ int rtapi_app_main(void)
 	{
 		PRU_base_freq = PRU_BASEFREQ;
 	}
-	
 	
 
     // connect to the HAL, initialise the driver
@@ -243,92 +229,27 @@ int rtapi_app_main(void)
 		hal_exit(comp_id);
 		return -1;
 	}
-
-	// Map the RPi BCM2835 peripherals - uses "rtapi_open_as_root" in place of "open"
-	if (!rt_bcm2835_init())
-    {
-      rtapi_print_msg(RTAPI_MSG_ERR,"rt_bcm2835_init failed. Are you running with root privlages??\n");
-      return -1;
-    }
-
-	// Set the SPI0 pins to the Alt 0 function to enable SPI0 access, setup CS register
-	// and clear TX and RX fifos
-	if (!bcm2835_spi_begin())
-    {
-      rtapi_print_msg(RTAPI_MSG_ERR,"bcm2835_spi_begin failed. Are you running with root privlages??\n");
-      return -1;
-    }
-
-	// Configure SPI0
-	bcm2835_spi_setBitOrder(BCM2835_SPI_BIT_ORDER_MSBFIRST);      // The default
-	bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);                   // The default
-
-	//bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_128);		// 3.125MHz on RPI3
-	//bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_64);		// 6.250MHz on RPI3
-	//bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_32);		// 12.5MHz on RPI3
-	//bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_16);		// 25MHz on RPI3
-
-	if (chip == LPC) 
-	{
-		bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_64);
-		rtapi_print_msg(RTAPI_MSG_INFO,"PRU: SPI default clk divider set to 64\n");
-	}
-	else if (chip == STM) 
-	{
-		bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_16);
-		rtapi_print_msg(RTAPI_MSG_INFO,"PRU: SPI default clk divider set to 16\n");
-	}
 	
-	// check if the default SPI clock divider has been overriden at the command line
-	if (SPI_clk_div != -1)
+	// Initialize the UDP socket
+	if (UDP_init() < 0)
 	{
-		// check that the setting is a power of 2
-		if ((SPI_clk_div & (SPI_clk_div - 1)) == 0)
-		{
-			bcm2835_spi_setClockDivider(SPI_clk_div);
-			rtapi_print_msg(RTAPI_MSG_INFO,"PRU: SPI clk divider overridden and set to %d\n", SPI_clk_div);			
-		}
-		else
-		{
-			// it's not a power of 2
-			rtapi_print_msg(RTAPI_MSG_ERR,"ERROR: PRU SPI clock divider incorrect\n");
-			return -1;
-		}	
+		rtapi_print_msg(RTAPI_MSG_ERR, "Error: The board is unreachable\n");
+		return -1;
 	}
 
-    bcm2835_spi_chipSelect(BCM2835_SPI_CS0);                      // The default
-    bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS0, LOW);      // the default
-
-
-	/* RPI_GPIO_P1_19        = 10 		MOSI when SPI0 in use
-     * RPI_GPIO_P1_21        =  9 		MISO when SPI0 in use
-     * RPI_GPIO_P1_23        = 11 		CLK when SPI0 in use
-     * RPI_GPIO_P1_24        =  8 		CE0 when SPI0 in use
-     * RPI_GPIO_P1_26        =  7 		CE1 when SPI0 in use
-	 */
-
-	// Configure pullups on SPI0 pins - source termination and CS high (does this allows for higher clock frequencies??? wiring is more important here)
-	bcm2835_gpio_set_pud(RPI_GPIO_P1_19, BCM2835_GPIO_PUD_DOWN);	// MOSI
-	bcm2835_gpio_set_pud(RPI_GPIO_P1_21, BCM2835_GPIO_PUD_DOWN);	// MISO
-	bcm2835_gpio_set_pud(RPI_GPIO_P1_24, BCM2835_GPIO_PUD_UP);		// CS0
-
-	// export remoraPRU SPI enable and status bits
-	retval = hal_pin_bit_newf(HAL_IN, &(data->SPIenable),
-			comp_id, "%s.SPI-enable", prefix);
+	// export spiPRU SPI enable and status bits
+	retval = hal_pin_bit_newf(HAL_IN, &(data->enable),
+			comp_id, "%s.enable", prefix);
 	if (retval != 0) goto error;
 	
-	retval = hal_pin_bit_newf(HAL_IN, &(data->SPIreset),
-			comp_id, "%s.SPI-reset", prefix);
+	retval = hal_pin_bit_newf(HAL_IN, &(data->reset),
+			comp_id, "%s.reset", prefix);
 	if (retval != 0) goto error;
 
-	retval = hal_pin_bit_newf(HAL_OUT, &(data->SPIstatus),
-			comp_id, "%s.SPI-status", prefix);
+	retval = hal_pin_bit_newf(HAL_OUT, &(data->status),
+			comp_id, "%s.status", prefix);
 	if (retval != 0) goto error;
 
-	bcm2835_gpio_fsel(reset_gpio_pin, BCM2835_GPIO_FSEL_OUTP);
-	retval = hal_pin_bit_newf(HAL_IN, &(data->PRUreset),
-			comp_id, "%s.PRU-reset", prefix);
-	if (retval != 0) goto error;
 
 
     // export all the variables for each joint
@@ -427,16 +348,29 @@ This is throwing errors from axis.py for some reason...
 
 	for (n = 0; n < DIGITAL_OUTPUTS; n++) {
 		retval = hal_pin_bit_newf(HAL_IN, &(data->outputs[n]),
-				comp_id, "%s.output.%01d", prefix, n);
+				comp_id, "%s.output.%02d", prefix, n);
 		if (retval != 0) goto error;
 		*(data->outputs[n])=0;
 	}
 
 	for (n = 0; n < DIGITAL_INPUTS; n++) {
 		retval = hal_pin_bit_newf(HAL_OUT, &(data->inputs[n]),
-				comp_id, "%s.input.%01d", prefix, n);
+				comp_id, "%s.input.%02d", prefix, n);
 		if (retval != 0) goto error;
 		*(data->inputs[n])=0;
+
+		retval = hal_pin_bit_newf(HAL_OUT, &(data->inputs[n+DIGITAL_INPUTS]),
+				comp_id, "%s.input.%02d.not", prefix, n);
+		if (retval != 0) goto error;
+		*(data->inputs[n+DIGITAL_INPUTS])=1;
+
+	}
+	
+	for (n = 0; n < NVMPG_INPUTS; n++) {
+		retval = hal_pin_bit_newf(HAL_OUT, &(data->NVMPGinputs[n]),
+				comp_id, "%s.NVMPGinput.%01d", prefix, n);
+		if (retval != 0) goto error;
+		*(data->NVMPGinputs[n])=0;
 	}
 
 	error:
@@ -447,9 +381,6 @@ This is throwing errors from axis.py for some reason...
 		hal_exit(comp_id);
 		return -1;
 	}
-
-
-
 
 
 	// Export functions
@@ -464,7 +395,7 @@ This is throwing errors from axis.py for some reason...
 
 	rtapi_snprintf(name, sizeof(name), "%s.write", prefix);
 	/* no FP operations */
-	retval = hal_export_funct(name, spi_write, 0, 0, 0, comp_id);
+	retval = hal_export_funct(name, pru_write, 0, 0, 0, comp_id);
 	if (retval < 0) {
 		rtapi_print_msg(RTAPI_MSG_ERR,
 		        "%s: ERROR: write function export failed\n", modname);
@@ -473,7 +404,7 @@ This is throwing errors from axis.py for some reason...
 	}
 
 	rtapi_snprintf(name, sizeof(name), "%s.read", prefix);
-	retval = hal_export_funct(name, spi_read, data, 1, 0, comp_id);
+	retval = hal_export_funct(name, pru_read, data, 1, 0, comp_id);
 	if (retval < 0) {
 		rtapi_print_msg(RTAPI_MSG_ERR,
 		        "%s: ERROR: read function export failed\n", modname);
@@ -488,6 +419,10 @@ This is throwing errors from axis.py for some reason...
 
 void rtapi_app_exit(void)
 {
+	int ret = shutdown(udpSocket, SHUT_RDWR);
+	if (ret < 0)
+      rtapi_print("ERROR: can't close socket: %s\n", strerror(errno));
+	
     hal_exit(comp_id);
 }
 
@@ -496,153 +431,65 @@ void rtapi_app_exit(void)
 *                   LOCAL FUNCTION DEFINITIONS                         *
 ************************************************************************/
 
-
-// This is the same as the standard bcm2835 library except for the use of
-// "rtapi_open_as_root" in place of "open"
-
-int rt_bcm2835_init(void)
+int UDP_init(void)
 {
-    int  memfd;
-    int  ok;
-    FILE *fp;
+	int ret;
 
-    if (debug) 
-    {
-        bcm2835_peripherals = (uint32_t*)BCM2835_PERI_BASE;
-
-	bcm2835_pads = bcm2835_peripherals + BCM2835_GPIO_PADS/4;
-	bcm2835_clk  = bcm2835_peripherals + BCM2835_CLOCK_BASE/4;
-	bcm2835_gpio = bcm2835_peripherals + BCM2835_GPIO_BASE/4;
-	bcm2835_pwm  = bcm2835_peripherals + BCM2835_GPIO_PWM/4;
-	bcm2835_spi0 = bcm2835_peripherals + BCM2835_SPI0_BASE/4;
-	bcm2835_bsc0 = bcm2835_peripherals + BCM2835_BSC0_BASE/4;
-	bcm2835_bsc1 = bcm2835_peripherals + BCM2835_BSC1_BASE/4;
-	bcm2835_st   = bcm2835_peripherals + BCM2835_ST_BASE/4;
-	bcm2835_aux  = bcm2835_peripherals + BCM2835_AUX_BASE/4;
-	bcm2835_spi1 = bcm2835_peripherals + BCM2835_SPI1_BASE/4;
-
-	return 1; /* Success */
-    }
-
-    /* Figure out the base and size of the peripheral address block
-    // using the device-tree. Required for RPi2/3/4, optional for RPi 1
-    */
-    if ((fp = fopen(BMC2835_RPI2_DT_FILENAME , "rb")))
-    {
-        unsigned char buf[16];
-        uint32_t base_address;
-        uint32_t peri_size;
-        if (fread(buf, 1, sizeof(buf), fp) >= 8)
-        {
-            base_address = (buf[4] << 24) |
-              (buf[5] << 16) |
-              (buf[6] << 8) |
-              (buf[7] << 0);
-            
-            peri_size = (buf[8] << 24) |
-              (buf[9] << 16) |
-              (buf[10] << 8) |
-              (buf[11] << 0);
-            
-            if (!base_address)
-            {
-                /* looks like RPI 4 */
-                base_address = (buf[8] << 24) |
-                      (buf[9] << 16) |
-                      (buf[10] << 8) |
-                      (buf[11] << 0);
-                      
-                peri_size = (buf[12] << 24) |
-                (buf[13] << 16) |
-                (buf[14] << 8) |
-                (buf[15] << 0);
-            }
-            /* check for valid known range formats */
-            if ((buf[0] == 0x7e) &&
-                    (buf[1] == 0x00) &&
-                    (buf[2] == 0x00) &&
-                    (buf[3] == 0x00) &&
-                    ((base_address == BCM2835_PERI_BASE) || (base_address == BCM2835_RPI2_PERI_BASE) || (base_address == BCM2835_RPI4_PERI_BASE)))
-            {
-                bcm2835_peripherals_base = (off_t)base_address;
-                bcm2835_peripherals_size = (size_t)peri_size;
-                if( base_address == BCM2835_RPI4_PERI_BASE )
-                {
-                    pud_type_rpi4 = 1;
-                }
-            }
-        
-        }
-        
-	fclose(fp);
-    }
-    /* else we are prob on RPi 1 with BCM2835, and use the hardwired defaults */
-
-    /* Now get ready to map the peripherals block 
-     * If we are not root, try for the new /dev/gpiomem interface and accept
-     * the fact that we can only access GPIO
-     * else try for the /dev/mem interface and get access to everything
-     */
-    memfd = -1;
-    ok = 0;
-    if (geteuid() == 0)
-    {
-      /* Open the master /dev/mem device */
-      if ((memfd = rtapi_open_as_root("/dev/mem", O_RDWR | O_SYNC) ) < 0) 
+	// Create a UDP socket
+	udpSocket = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	if (udpSocket < 0)
 	{
-	  fprintf(stderr, "bcm2835_init: Unable to open /dev/mem: %s\n",
-		  strerror(errno)) ;
-	  goto exit;
+		rtapi_print("ERROR: can't open socket: %s\n", strerror(errno));
+		return -errno;
 	}
-      
-      /* Base of the peripherals block is mapped to VM */
-      bcm2835_peripherals = mapmem("gpio", bcm2835_peripherals_size, memfd, bcm2835_peripherals_base);
-      if (bcm2835_peripherals == MAP_FAILED) goto exit;
-      
-      /* Now compute the base addresses of various peripherals, 
-      // which are at fixed offsets within the mapped peripherals block
-      // Caution: bcm2835_peripherals is uint32_t*, so divide offsets by 4
-      */
-      bcm2835_gpio = bcm2835_peripherals + BCM2835_GPIO_BASE/4;
-      bcm2835_pwm  = bcm2835_peripherals + BCM2835_GPIO_PWM/4;
-      bcm2835_clk  = bcm2835_peripherals + BCM2835_CLOCK_BASE/4;
-      bcm2835_pads = bcm2835_peripherals + BCM2835_GPIO_PADS/4;
-      bcm2835_spi0 = bcm2835_peripherals + BCM2835_SPI0_BASE/4;
-      bcm2835_bsc0 = bcm2835_peripherals + BCM2835_BSC0_BASE/4; /* I2C */
-      bcm2835_bsc1 = bcm2835_peripherals + BCM2835_BSC1_BASE/4; /* I2C */
-      bcm2835_st   = bcm2835_peripherals + BCM2835_ST_BASE/4;
-      bcm2835_aux  = bcm2835_peripherals + BCM2835_AUX_BASE/4;
-      bcm2835_spi1 = bcm2835_peripherals + BCM2835_SPI1_BASE/4;
 
-      ok = 1;
-    }
-    else
-    {
-      /* Not root, try /dev/gpiomem */
-      /* Open the master /dev/mem device */
-      if ((memfd = open("/dev/gpiomem", O_RDWR | O_SYNC) ) < 0) 
+	bzero((char*) &dstAddr, sizeof(dstAddr));
+	dstAddr.sin_family = AF_INET;
+	dstAddr.sin_addr.s_addr = inet_addr(dstAddress);
+	dstAddr.sin_port = htons(DST_PORT);
+
+	bzero((char*) &srcAddr, sizeof(srcAddr));
+	srcAddr.sin_family = AF_INET;
+	srcAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	srcAddr.sin_port = htons(SRC_PORT);
+	
+	// bind the local socket to SCR_PORT
+	ret = bind(udpSocket, (struct sockaddr *) &srcAddr, sizeof(srcAddr));
+	if (ret < 0)
 	{
-	  fprintf(stderr, "bcm2835_init: Unable to open /dev/gpiomem: %s\n",
-		  strerror(errno)) ;
-	  goto exit;
+		rtapi_print("ERROR: can't bind: %s\n", strerror(errno));
+		return -errno;
 	}
-      
-      /* Base of the peripherals block is mapped to VM */
-      bcm2835_peripherals_base = 0;
-      bcm2835_peripherals = mapmem("gpio", bcm2835_peripherals_size, memfd, bcm2835_peripherals_base);
-      if (bcm2835_peripherals == MAP_FAILED) goto exit;
-      bcm2835_gpio = bcm2835_peripherals;
-      ok = 1;
-    }
+	
+	// Connect to send and receive only to the server_addr
+	ret = connect(udpSocket, (struct sockaddr*) &dstAddr, sizeof(struct sockaddr_in));
+	if (ret < 0)
+	{
+		rtapi_print("ERROR: can't connect: %s\n", strerror(errno));
+		return -errno;
+	}
 
-exit:
-    if (memfd >= 0)
-        close(memfd);
+	struct timeval timeout;
+	timeout.tv_sec = 0;
+	timeout.tv_usec = RECV_TIMEOUT_US;
 
-    if (!ok)
-	bcm2835_close();
+	ret = setsockopt(udpSocket, SOL_SOCKET, SO_RCVTIMEO, (char*) &timeout, sizeof(timeout));
+	if (ret < 0) {
+	rtapi_print("ERROR: can't set receive timeout socket option: %s\n",
+		strerror(errno));
+	return -errno;
+	}
 
-    return ok;
+	timeout.tv_usec = SEND_TIMEOUT_US;
+	ret = setsockopt(udpSocket, SOL_SOCKET, SO_SNDTIMEO, (char*) &timeout,
+	  sizeof(timeout));
+	if (ret < 0) {
+	rtapi_print("ERROR: can't set send timeout socket option: %s\n",
+		strerror(errno));
+	return -errno;
+	}
+
+	return 0;
 }
 
 void update_freq(void *arg, long period)
@@ -686,7 +533,7 @@ void update_freq(void *arg, long period)
 		// calculate frequency limit
 		//max_freq = PRU_BASEFREQ/(4.0); 			//limit of DDS running at 80kHz
 		//max_freq = PRU_BASEFREQ/(2.0); 	
-		max_freq = PRU_base_freq/(2.0);
+		max_freq = PRU_base_freq;
 
 		// check for user specified frequency limit parameter
 		if (data->maxvel[i] <= 0.0)
@@ -771,9 +618,9 @@ void update_freq(void *arg, long period)
 			}
 			else
 			{
-				deadband = 1 / data->pos_scale[i];
+				deadband = fabs(1/data->pos_scale[i]);
 			}	
-
+			
 			// read the command and feedback
 			command = *(data->pos_cmd[i]);
 			feedback = *(data->pos_fb[i]);
@@ -854,38 +701,28 @@ void update_freq(void *arg, long period)
 }
 
 
-void spi_read()
+void pru_read()
 {
-	int i;
+	int i, ret;
 	double curr_pos;
 
 	// Data header
 	txData.header = PRU_READ;
 	
-	// update the PRUreset output
-	if (*(data->PRUreset))
-	{ 
-		bcm2835_gpio_set(reset_gpio_pin);
-    }
-	else
+	if (*(data->enable))
 	{
-		bcm2835_gpio_clr(reset_gpio_pin);
-    }
-	
-	if (*(data->SPIenable))
-	{
-		if( (*(data->SPIreset) && !(data->SPIresetOld)) || *(data->SPIstatus) )
+		if( (*(data->reset) && !(data->resetOld)) || *(data->status) )
 		{
-			// reset rising edge detected, try SPI transfer and reset OR PRU running
+			// reset rising edge detected, try transfer and reset OR PRU running
 			
 			// Transfer to and from the PRU
-			spi_transfer();
-
+			pru_transfer(sizeof(txData.header), BUFFER_SIZE);
+			
 			switch (rxData.header)		// only process valid SPI payloads. This rejects bad payloads
 			{
 				case PRU_DATA:
 					// we have received a GOOD payload from the PRU
-					*(data->SPIstatus) = 1;
+					*(data->status) = 1;
 
 					for (i = 0; i < JOINTS; i++)
 					{
@@ -913,43 +750,64 @@ void spi_read()
 						if ((rxData.inputs & (1 << i)) != 0)
 						{
 							*(data->inputs[i]) = 1; 		// input is high
+							*(data->inputs[i+DIGITAL_INPUTS]) = 0; 		// inverted
 						}
 						else
 						{
 							*(data->inputs[i]) = 0;			// input is low
+							*(data->inputs[i+DIGITAL_INPUTS]) = 1; 		// inverted
 						}
 					}
+					
+					// NVMPG Inputs
+					for (i = 0; i < NVMPG_INPUTS; i++)
+					{
+						if ((rxData.NVMPGinputs & (1 << i)) != 0)
+						{
+							*(data->NVMPGinputs[i]) = 1; 		// input is high
+						}
+						else
+						{
+							*(data->NVMPGinputs[i]) = 0;			// input is low
+						}
+					}
+					
+					break;
+				
+				case PRU_ACKNOWLEDGE:
+					// we've dropped a packet somewhere but comms are still up
 					break;
 					
+				case PRU_ERR:
+					// we've dropped a packet somewhere but comms are still up
+					break;
+				
 				case PRU_ESTOP:
 					// we have an eStop notification from the PRU
-					*(data->SPIstatus) = 0;
+					*(data->status) = 0;
 					 rtapi_print_msg(RTAPI_MSG_ERR, "An E-stop is active");
+					break;
 
 				default:
 					// we have received a BAD payload from the PRU
-					*(data->SPIstatus) = 0;
-
-					rtapi_print("Bad SPI payload = %x\n", rxData.header);
-					//for (i = 0; i < SPIBUFSIZE; i++) {
-					//	rtapi_print("%d\n",rxData.rxBuffer[i]);
-					//}
+					*(data->status) = 0;
+					rtapi_print("Bad payload = %x\n", rxData.header);
 					break;
 			}
 		}
 	}
 	else
 	{
-		*(data->SPIstatus) = 0;
+		*(data->status) = 0;
 	}
 	
-	data->SPIresetOld = *(data->SPIreset);
+	data->resetOld = *(data->reset);
 }
 
 
-void spi_write()
+void pru_write()
 {
-	int i;
+	int i, ret;
 
 	// Data header
 	txData.header = PRU_WRITE;
@@ -991,29 +849,71 @@ void spi_write()
 		}
 	}
 
-	if( *(data->SPIstatus) )
+	if( *(data->status) )
 	{
 		// Transfer to and from the PRU
-		spi_transfer();
-	}
+		pru_transfer(BUFFER_SIZE, sizeof(rxData.header));
+		
+		switch (rxData.header)
+		{
+			case PRU_DATA:
+				// we've dropped a packet somewhere but comms are still up
+				break;
+			
+			case PRU_ACKNOWLEDGE:
+				// this is the response we expect
+				break;
+				
+			case PRU_ERR:
+				// there was a write error
+				rtapi_print("Data write error: %x\n",rxData.header);
+				break;
+			
+			case PRU_ESTOP:
+				// we have an eStop notification from the PRU
+				*(data->status) = 0;
+				 rtapi_print_msg(RTAPI_MSG_ERR, "An E-stop is active");
+				break;
 
+			default:
+				// we have received a BAD payload from the PRU
+				*(data->status) = 0;
+				rtapi_print("Bad payload = %x\n", rxData.header);
+				break;
+		}	
+	}
 }
 
 
-void spi_transfer()
+void pru_transfer(int txSize, int rxSize)
 {
-	// send and receive data to and from the Remora PRU concurrently
+	int ret;
+	long long t1, t2;
 
-	if (chip == LPC) 
+	// Send datagram
+	ret = send(udpSocket, txData.txBuffer, txSize, 0);
+
+	// Receive incoming datagram
+    t1 = rtapi_get_time();
+    do {
+        ret = recv(udpSocket, rxData.rxBuffer, rxSize, 0);
+        if(ret < 0) rtapi_delay(READ_PCK_DELAY_NS);
+        t2 = rtapi_get_time();
+    } while ((ret < 0) && ((t2 - t1) < 200*1000*1000));
+
+	if (ret > 0)
 	{
-		for (int i = 0; i < SPIBUFSIZE; i++)
-		{
-			rxData.rxBuffer[i] = bcm2835_spi_transfer(txData.txBuffer[i]);
-		}
+		errCount = 0;
 	}
-	else if (chip == STM)
+	else
 	{
-		bcm2835_spi_transfernb(txData.txBuffer, rxData.rxBuffer, SPIBUFSIZE);
+		errCount++;
+	}
+	
+	if (errCount > 2)
+	{
+		*(data->status) = 0;
+		rtapi_print("Ethernet ERROR: %s\n", strerror(errno));
 	}
 }
 

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+sudo halcompile --install ./Remora-eth/remora_eth.c
+sudo halcompile --install ./Remora-rpspi/remora_rpspi.c
+sudo halcompile --install ./Remora-rpspi/remora_lpc.c
+sudo halcompile --install ./NVMPG/nvmpg.c
+sudo halcompile --install ./PIDcontroller/PIDcontroller.c
+sudo halcompile --install ./PRUencoder/PRUencoder.c
+
+
+

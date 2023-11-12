@@ -38,7 +38,7 @@
 #include "bcm2835.h"
 #include "bcm2835.c"
 
-#include "remora.h"
+#include "remora_rpspi.h"
 
 
 #define MODNAME "remora_rpspi"

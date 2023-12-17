@@ -50,6 +50,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #elif  TARGET_BLUEPILL
 #include "board_config.h"
 
+#elif  TARGET_NUCLEO_H723ZG
+#include "board_config.h"
+
 #endif
 
 #include "configuration.h"
@@ -146,8 +149,8 @@ volatile uint16_t* ptrOutputs;
 //#if defined TARGET_NUCLEO_F446RE 
     RemoraComms comms(ptrRxData, ptrTxData, SPI2, PB_1);
 
-//#elif defined TARGET_NUCLEO_F446ZE
-  //  RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
+#elif defined TARGET_NUCLEO_H723ZG
+    RemoraComms comms(ptrRxData, ptrTxData, SPI1, PB_1);
 
 #elif defined TARGET_NUCLEO_G0B1RE 
     RemoraComms comms(ptrRxData, ptrTxData, SPI2, PB_10);

@@ -18,6 +18,20 @@ RemoraComms::RemoraComms(volatile rxData_t* ptrRxData, volatile txData_t* ptrTxD
         sharedSPI = false;
         HAL_NVIC_SetPriority(EXTI4_IRQn, 5, 0);
     }
+    else if (this->interruptPin == PB_1)
+    {
+        // interrupt pin is not the NSS pin, ie the board shares the SPI bus with the SD card
+        // configure the SPI in software NSS mode and always on
+        sharedSPI = true;
+        HAL_NVIC_SetPriority(EXTI1_IRQn , 5, 0);
+    }
+        else if (this->interruptPin == PB_6)
+    {
+        // interrupt pin is not the NSS pin, ie the board shares the SPI bus with the SD card
+        // configure the SPI in software NSS mode and always on
+        sharedSPI = true;
+        HAL_NVIC_SetPriority(EXTI9_5_IRQn , 5, 0);
+    }
 
     slaveSelect.rise(callback(this, &RemoraComms::processPacket));
 }
@@ -87,9 +101,9 @@ void RemoraComms::init()
         printf("Initialising DMA for SPI\n");
 
         __HAL_RCC_GPIOA_CLK_ENABLE();
-        __HAL_RCC_DMA2_CLK_ENABLE();
+        __HAL_RCC_DMA1_CLK_ENABLE();
 
-        this->hdma_spi_tx.Instance                   = DMA1_Stream1;
+        this->hdma_spi_tx.Instance                   = DMA1_Stream0;
         this->hdma_spi_tx.Init.Request               = DMA_REQUEST_SPI1_TX;
         this->hdma_spi_tx.Init.Direction             = DMA_MEMORY_TO_PERIPH;
         this->hdma_spi_tx.Init.PeriphInc             = DMA_PINC_DISABLE;
@@ -105,7 +119,7 @@ void RemoraComms::init()
 
         __HAL_LINKDMA(&this->spiHandle, hdmatx, this->hdma_spi_tx);
 
-        this->hdma_spi_rx.Instance                   = DMA1_Stream2;
+        this->hdma_spi_rx.Instance                   = DMA1_Stream1;
         this->hdma_spi_rx.Init.Request               = DMA_REQUEST_SPI1_RX;
         this->hdma_spi_rx.Init.Direction             = DMA_PERIPH_TO_MEMORY;
         this->hdma_spi_rx.Init.PeriphInc             = DMA_PINC_DISABLE;

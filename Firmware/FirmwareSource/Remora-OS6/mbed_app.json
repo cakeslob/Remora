@@ -38,6 +38,9 @@
             "platform.stdio-flush-at-exit"      : true,
             "target.default_lib": "std"
         },
+        "NUCLEO_F411RE": {
+             "platform.stdio-baud-rate": 115200
+        },
         "NUCLEO_F446RE": {
              "platform.stdio-baud-rate": 115200
         },

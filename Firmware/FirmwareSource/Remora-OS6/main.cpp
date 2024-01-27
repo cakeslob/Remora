@@ -38,6 +38,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #elif  TARGET_NUCLEO_F446ZE
 #include "board_config.h"
 
+#elif  TARGET_NUCLEO_F411RE
+#include "board_config.h"
+
 #elif  TARGET_NUCLEO_F401RE
 #include "board_config.h"
 
@@ -142,7 +145,7 @@ volatile uint16_t* ptrOutputs;
 ************************************************************************/
 
 // SD card access and Remora communication protocol
-#if defined TARGET_NUCLEO_F446RE || TARGET_NUCLEO_F446ZE || TARGET_NUCLEO_F401RE || TARGET_NUCLEO_F103RB
+#if defined TARGET_NUCLEO_F446RE || TARGET_NUCLEO_F446ZE || TARGET_NUCLEO_F411RE || TARGET_NUCLEO_F401RE || TARGET_NUCLEO_F103RB
 //#if defined TARGET_NUCLEO_F446RE 
     RemoraComms comms(ptrRxData, ptrTxData, SPI2, PB_1);
 

@@ -1,16 +1,17 @@
 # Remora Blue/Blackpill CNC 
-This repo is for a setup using a STM Bluepill using STM32F103xx and STM Blackpill using STM32F401 and 411
-The configuration is for 3 stepgen, 1 encoders, 5 input, 2 output and 1 pwm. It is a basic configuration for the time being, using the static config from Flexi-hal.
-- SPI2 for connection to RPI4, with pins PB12, PB13, PB14 and PB15, and pin PA8 for reset
+This repo is for a setup using a STM Bluepill using STM32F103xx and STM Blackpill using STM32F401 and 411, only F411 has cncboard firmware at the moment. 
+The configuration is for 3/4 stepgen, 1 encoders, 5/6 input, 2 output and 1 pwm. It is a basic configuration for the time being, using the static config from Flexi-hal.
+- SPI2 for connection to RPI4, with pins PB12, PB13, PB14 and PB15, and pin PB5 for reset
 - the pinout configuration is loacted in /Firmware/FirmwareSource/Remora-OS6/TARGET_xxx/board_config.h
 - if you wish to change the pinout, you must configure it in this file, and them recompile 
-- Firmware premade bin file is located in /Firmware/FirmwareBin/firmware.bin
+- Firmware premade bin file is located in /Firmware/FirmwareBin/411_STEPSTICK/firmware.bin or /411_DB25/firmware.bin
 
+Documentation 
+https://github.com/cakeslob/Remora-docs/blob/nucleo/docs/source/hardware/blackpill.rst
 
-Documentation coming soon, but here is something related 
-https://github.com/cakeslob/Remora-docs/blob/nucleo/docs/source/hardware/nucleo446.rst
+<img src="/blackpill_ss_pinout.png" >
+<img src="/blackpill_25_pinout.png" >
 
-<img src="/blackpill-pinout_remp.png" >
 
 # Remora
 

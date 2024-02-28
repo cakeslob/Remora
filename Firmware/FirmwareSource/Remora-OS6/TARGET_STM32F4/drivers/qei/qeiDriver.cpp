@@ -14,10 +14,10 @@ QEIdriver::QEIdriver(bool hasIndex) :
     hasIndex(hasIndex),
 //    qeiIndex(PE_13)
     //qeiIndex(PA_12)
-    qeiIndex(PB_7)
+    qeiIndex(PA_2)
 {
     this->hasIndex = true;
-    this->irq = EXTI9_5_IRQn;
+    this->irq = EXTI2_IRQn;
     //this->irq = EXTI15_10_IRQn;
     //this->irq = EXTI2_IRQn;
 
@@ -51,12 +51,12 @@ void QEIdriver::init()
     GPIO_InitTypeDef GPIO_InitStruct = {0};
 
     __HAL_RCC_TIM2_CLK_ENABLE();
-    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
     /**TIM2 GPIO Configuration
-        PB_8     ------> TIM2_CH1
-        PB_9     ------> TIM2_CH2
+        PA_15     ------> TIM2_CH1
+        PA_1     ------> TIM2_CH2
         */
-    GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9;
+    GPIO_InitStruct.Pin = GPIO_PIN_15|GPIO_PIN_1;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
@@ -111,17 +111,17 @@ void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef* htim_encoder)
         printf("Enabling TIM2 for QEI");
         __HAL_RCC_TIM2_CLK_ENABLE();
 
-        __HAL_RCC_GPIOB_CLK_ENABLE();
+        __HAL_RCC_GPIOA_CLK_ENABLE();
         /**TIM2 GPIO Configuration
-        PB_8     ------> TIM2_CH1
-        PB_9     ------> TIM2_CH2
+        PA_15     ------> TIM2_CH1
+        PA_1     ------> TIM2_CH2
         */
-        GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9;
+        GPIO_InitStruct.Pin = GPIO_PIN_15|GPIO_PIN_1;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
         GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
-        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     }
 }
 

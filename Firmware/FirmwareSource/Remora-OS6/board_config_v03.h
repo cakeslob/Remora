@@ -40,7 +40,7 @@ struct BlinkPinConfig {
 
 //Module config
 
-#define BOARD "BLACKPILLF411 STEPSTICK PCBv0355"
+#define BOARD "BLACKPILLF411 STEPSTICK PCBv03"
 
 // Base thread frequency
 uint32_t base_freq_config = 40000;
@@ -68,7 +68,7 @@ DigitalPinConfig DIConfigs[] = {{"X_LIMIT", "PB_9", PULLUP, false, 0},
 //Comment, pin, modifier, invert, data bit
 DigitalPinConfig DOConfigs[] = {{"STEP_ENA", "PB_2", PULLUP, true, 0}, // D8
                                 {"AUX0", "PC_13", PULLNONE, false, 1},
-                                {"AUX1", "PB_10", PULLNONE, false, 2}};
+                                {"AUX1", "PA_8", PULLNONE, false, 2}};
         
 PWMPinConfig PWMConfigs[] = {{"Spindle PWM", "PB_0"}};      
 

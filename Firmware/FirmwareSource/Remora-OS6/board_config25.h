@@ -40,7 +40,7 @@ struct BlinkPinConfig {
 
 //Module config
 
-#define BOARD "BLACKPILLF411 STEPSTICK PCBv0355"
+#define BOARD "BLACKPILLF411 DB25 PCB v0.1"
 
 // Base thread frequency
 uint32_t base_freq_config = 40000;
@@ -48,9 +48,10 @@ uint32_t base_freq_config = 40000;
 //Base thread objects - Stepgens, encoders, and RC servos supported here
 //Comment, joint number, step pin, dir pin, enable pin
 
-StepgenConfig StepgenConfigs[] = {{"X-Axis", 0, "PA_4", "PA_3"}, 
-                                  {"Y-Axis", 1, "PA_6", "PA_5"},
-                                  {"Z-Axis", 2, "PB_1", "PA_7"} 
+StepgenConfig StepgenConfigs[] = {{"X-Axis", 0, "PA_1", "PA_2"}, 
+                                  {"Y-Axis", 1, "PA_3", "PA_4"},
+                                  {"Z-Axis", 2, "PA_5", "PA_6"}, 
+                                  {"A-Axis", 3, "PC_14", "PC_15"} 
                                  };
 
 EncoderConfig EncoderConfigs[] = {};
@@ -58,17 +59,17 @@ EncoderConfig EncoderConfigs[] = {};
 
 
 
-DigitalPinConfig DIConfigs[] = {{"X_LIMIT", "PB_9", PULLUP, false, 0},
-                                {"Y_LIMIT", "PB_8", PULLUP, false, 1},
-                                {"Z_LIMIT", "PB_7", PULLUP, false, 2}, 
-                                {"IN1", "PB_6", PULLUP, false, 3},
-                                {"IN2", "PB_4", PULLUP, false, 4},
-                                {"IN3", "PB_3", PULLUP, false, 5},  
+DigitalPinConfig DIConfigs[] = {{"X_LIMIT", "PB_6", PULLUP, false, 0},
+                                {"Y_LIMIT", "PA_8", PULLUP, false, 1},
+                                {"Z_LIMIT", "PA_15", PULLUP, false, 2}, 
+                                {"IN1", "PB_3", PULLUP, false, 3},
+                                {"IN2", "PB_4", PULLUP, false, 4}, 
                                 {"USR_BUTTON", "PA_0", PULLUP, true, 6}}; //Comment, pin, modifier, invert, data bit
+
 //Comment, pin, modifier, invert, data bit
-DigitalPinConfig DOConfigs[] = {{"STEP_ENA", "PB_2", PULLUP, true, 0}, // D8
-                                {"AUX0", "PC_13", PULLNONE, false, 1},
-                                {"AUX1", "PB_10", PULLNONE, false, 2}};
+DigitalPinConfig DOConfigs[] = {{"STEP_ENA", "PA_7", PULLNONE, false, 0}, // D8
+                                {"AUX0", "PB_1", PULLNONE, false, 1},
+                                {"AUX1", "PB_2", PULLNONE, false, 2}};
         
 PWMPinConfig PWMConfigs[] = {{"Spindle PWM", "PB_0"}};      
 

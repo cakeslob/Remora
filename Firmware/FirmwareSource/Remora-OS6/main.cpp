@@ -22,8 +22,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include <cstdio>
 #include <cerrno>
 #include <string> 
-/*#include "FATFileSystem.h"
-
+#include "FATFileSystem.h"
+/*
 #if defined TARGET_LPC176X || TARGET_STM32F1 ||  TARGET_MONSTER8 || TARGET_ROBIN_3 || TARGET_MANTA8
 #include "SDBlockDevice.h"
 #elif defined TARGET_SKRV2 || TARGET_OCTOPUS_446 || TARGET_BLACK_F407VE || TARGET_OCTOPUS_429 | TARGET_SKRV3
@@ -55,8 +55,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "board_config.h"
 
 
+
 #elif  TARGET_BLACKPILL_F411CE
-#include "board_config.h"
+//#include "board_config.h"
+#include "SDBlockDevice.h"
 
 #endif
 
@@ -161,8 +163,9 @@ volatile uint16_t* ptrOutputs;
     RemoraComms comms(ptrRxData, ptrTxData, SPI2, PB_10);
 
 #elif defined TARGET_BLUEPILL || TARGET_BLACKPILL_F411CE
-    //RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
+    SDBlockDevice blockDevice(PB_15, PB_14, PB_13, PA_0);  // mosi, miso, sclk, cs
     RemoraComms comms(ptrRxData, ptrTxData, SPI2, PB_12);
+    //RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
 
 
 #endif
@@ -171,7 +174,7 @@ volatile uint16_t* ptrOutputs;
 Watchdog& watchdog = Watchdog::get_instance();
 
 // Json configuration file stuff
-//FATFileSystem fileSystem("fs");
+FATFileSystem fileSystem("fs");
 FILE *jsonFile;
 string strJson;
 DynamicJsonDocument doc(JSON_BUFF_SIZE);
@@ -188,7 +191,7 @@ JsonObject module;
 /***********************************************************************
         ROUTINES
 ************************************************************************/
-/*
+
 void readJsonConfig()
 {
     printf("1. Reading json configuration file\n");
@@ -230,14 +233,14 @@ void readJsonConfig()
     fflush(stdout);
     fclose(jsonFile);
 }
-*/
+
 
 void setup()
 {
     printf("\n2. Setting up DMA and threads\n");
 
     // TODO: we can probably just deinit the blockdevice for all targets....?
-/*
+
     #if defined TARGET_STM32F4
     // deinitialise the SDIO device to avoid DMA issues with the SPI DMA Slave on the STM32F4
     blockDevice.deinit();
@@ -247,14 +250,14 @@ void setup()
     // remove the SD device as we are sharing the SPI with the comms module
     blockDevice.deinit();
     #endif
-    */
+    
 
     // initialise the Remora comms 
     comms.init();
     comms.start();
 }
 
-/*
+
 void deserialiseJSON()
 {
     printf("\n3. Parsing json configuration file\n");
@@ -315,7 +318,7 @@ void configThreads()
         }
     }
 }
-*/
+/*
 void static_configThreads()
 {
     printf("\n4. Config threads\n");
@@ -329,7 +332,7 @@ void static_configThreads()
 
 }
 
-/*
+*/
 void loadModules()
 {
     if (configError) return;
@@ -424,7 +427,7 @@ void loadModules()
         }
     }
 }
-*/
+/*
 void static_loadModules()
 {
     if (configError) return;
@@ -504,6 +507,7 @@ void static_loadModules()
     }
 
 }
+*/
 void debugThreadHigh()
 {
     //Module* debugOnB = new Debug("PC_1", 1);
@@ -541,7 +545,7 @@ int main()
     prevState = ST_RESET;
 
     printf("\nRemora PRU - Programmable Realtime Unit Mbed-OS6 \n");
-        printf("\nLoading - %s\n", BOARD);
+       // printf("\nLoading - %s\n", BOARD);
 
     watchdog.start(2000);
 
@@ -562,14 +566,14 @@ int main()
                 printf("\n## Entering SETUP state\n");
             }
             prevState = currentState;
-
+/*
             setup();
             static_configThreads();
             createThreads();
             //debugThreadHigh();
             static_loadModules();
             //debugThreadLow();
-         /*   #else
+            #else */
             readJsonConfig();
             setup();
             deserialiseJSON();
@@ -578,8 +582,7 @@ int main()
             //debugThreadHigh();
             loadModules();
             //debugThreadLow();
-            #endif
-         */   
+               
             currentState = ST_START;
             break; 
 

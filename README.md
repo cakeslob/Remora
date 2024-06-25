@@ -1,18 +1,18 @@
-# Remora Nucleo CNC shield v3.0
-This repo is for a setup using a STM Nucleo64 with classic CNC shield v3.0 
+# Remora Nucleo H723
 
-Main focus for this project is based around STM32F446RE, but other supported Nucleo boards include STM32F103RC, STM32F401RE, STM32F411RE and STM32F446ZE
-The configuration is for 4 stepgen, 4 encoders, 7 input, 2 output and 1 pwm. It is a basic configuration for the time being, using the static config from Flexi-hal.
-- SPI2 for connection to RPI4, with pins PB1, PB13, PB14 and PB15, and pin PB2 for reset
-- the pinout configuration is loacted in /Firmware/FirmwareSource/Remora-OS6/TARGET_NUCLEO_F446RE/board_config.h
-- if you wish to change the pinout, you must configure it in this file, and them recompile 
-- Firmware premade bin file is located in /Firmware/FirmwareBin/firmware.bin
+repo for development of the STM32H7 boards using a NucleoH723, using a static config. 
 
+Progress so far:
+- Firmware loads
+- Serial Output good
+- Blink kinda works (most likely issue to the static blink module)
+- DMAMUX i dont think is working, no connection to linuxcnc
+- dont know how to debug the H7
 
-Documentation here 
-https://github.com/cakeslob/Remora-docs/blob/nucleo/docs/source/hardware/nucleo446.rst
+  # To compile for Nucleo H723
 
-<img src="/nucleo446_pi.png" >
+  - need to remove a compile limitation is using ARM6, Remove this section here in the mbedlib targets list
+    https://github.com/ARMmbed/mbed-os/blob/baf6a3022a328b91713e03fd88f65126a9a53f01/targets/targets.json#L3333-L3339
 
 # Remora
 

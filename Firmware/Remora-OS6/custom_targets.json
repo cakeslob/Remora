@@ -1,0 +1,16 @@
+{
+
+
+    "BLUEPILL": {
+        "inherits": [
+            "MCU_STM32F103xB"],
+         "extra_labels_add": [
+            "STM32F1"
+        ],
+
+        "device_name": "STM32F103RB"
+    }
+
+
+
+}

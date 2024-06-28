@@ -1,0 +1,9 @@
+{
+    "target_overrides": {
+        "NUCLEO_F446RE": {
+            // By default, use a serial baudrate of 115200 and enable buffering on the serial port.
+            "platform.stdio-baud-rate": 115200,
+            "platform.stdio-buffered-serial": 1
+        }
+    }
+}

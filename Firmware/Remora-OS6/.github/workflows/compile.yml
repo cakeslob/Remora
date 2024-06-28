@@ -1,0 +1,33 @@
+# Example GitHub Actions workflow which provides a CI build for your Mbed CE project.
+
+name: Test that this Mbed project compiles
+
+on: push
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    container: ghcr.io/armmbed/mbed-os-env:master-latest
+    
+    strategy:
+      matrix:
+        mbed_target: 
+          # Change the below to match the target you want to compile the project for.
+          - LPC1768
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install python3-venv
+        run: |
+          apt-get update
+          apt-get install -y python3-venv
+
+      - name: Build project for ${{ matrix.mbed_target }}
+        run: |
+            mkdir build && cd build
+            cmake .. -GNinja -DMBED_TARGET=${{ matrix.mbed_target }}
+            ninja

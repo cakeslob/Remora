@@ -1,18 +1,4 @@
-# Remora Nucleo H723
-
-repo for development of the STM32H7 boards using a NucleoH723, using a static config. 
-
-Progress so far:
-- Firmware loads
-- Serial Output good
-- Blink kinda works (most likely issue to the static blink module)
-- DMAMUX i dont think is working, no connection to linuxcnc
-- dont know how to debug the H7
-
-  # To compile for Nucleo H723
-
-  - need to remove a compile limitation is using ARM6, Remove this section here in the mbedlib targets list
-    https://github.com/ARMmbed/mbed-os/blob/baf6a3022a328b91713e03fd88f65126a9a53f01/targets/targets.json#L3333-L3339
+# testing mbed-ce
 
 # Remora
 

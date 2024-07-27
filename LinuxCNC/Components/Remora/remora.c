@@ -19,7 +19,6 @@
 * Last change:
 ********************************************************************/
 
-
 #include "rtapi.h"			/* RTAPI realtime OS API */
 #include "rtapi_app.h"		/* RTAPI realtime module decls */
 #include "hal.h"			/* HAL public API decls */
@@ -30,7 +29,6 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
-
 
 // Using BCM2835 driver library by Mike McCauley, why reinvent the wheel!
 // http://www.airspayce.com/mikem/bcm2835/index.html
@@ -82,7 +80,7 @@ typedef struct {
 	hal_float_t 	*setPoint[VARIABLES];
 	hal_float_t 	*processVariable[VARIABLES];
 	hal_bit_t   	*outputs[DIGITAL_OUTPUTS];
-	hal_bit_t   	*inputs[DIGITAL_INPUTS];
+	hal_bit_t   	*inputs[DIGITAL_INPUTS*2];
 } data_t;
 
 static data_t *data;
@@ -146,7 +144,9 @@ static int64_t 		accum[JOINTS] = { 0 };
 static int32_t 		old_count[JOINTS] = { 0 };
 static int32_t		accum_diff = 0;
 
-static int 			reset_gpio_pin = 25;				// RPI GPIO pin number used to force watchdog reset of the PRU 
+static int reset_gpio_pin = 25; // RPI GPIO pin number used to force watchdog reset of the PRU 
+static int stm32_reset_gpio_pin = 17;
+static int stm32_boot_gpio_pin = 7;
 
 typedef enum CONTROL { POSITION, VELOCITY, INVALID } CONTROL;
 char *ctrl_type[JOINTS] = { "p" };
@@ -226,8 +226,6 @@ int rtapi_app_main(void)
 		PRU_base_freq = PRU_BASEFREQ;
 	}
 	
-	
-
     // connect to the HAL, initialise the driver
     comp_id = hal_init(modname);
     if (comp_id < 0)
@@ -327,6 +325,17 @@ int rtapi_app_main(void)
 	if (retval != 0) goto error;
 
 	bcm2835_gpio_fsel(reset_gpio_pin, BCM2835_GPIO_FSEL_OUTP);
+    bcm2835_gpio_fsel(stm32_reset_gpio_pin, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_fsel(stm32_boot_gpio_pin, BCM2835_GPIO_FSEL_OUTP);
+
+	// set/clear GPIOs connected to STM reset and boot0 pins
+	bcm2835_gpio_clr(stm32_boot_gpio_pin);
+	bcm2835_gpio_set(stm32_reset_gpio_pin);
+
+   //reset STM32
+   bcm2835_gpio_clr(stm32_reset_gpio_pin);
+   usleep(5000);
+   bcm2835_gpio_set(stm32_reset_gpio_pin);
 	retval = hal_pin_bit_newf(HAL_IN, &(data->PRUreset),
 			comp_id, "%s.PRU-reset", prefix);
 	if (retval != 0) goto error;
@@ -428,16 +437,21 @@ This is throwing errors from axis.py for some reason...
 
 	for (n = 0; n < DIGITAL_OUTPUTS; n++) {
 		retval = hal_pin_bit_newf(HAL_IN, &(data->outputs[n]),
-				comp_id, "%s.output.%01d", prefix, n);
+				comp_id, "%s.output.%02d", prefix, n);
 		if (retval != 0) goto error;
 		*(data->outputs[n])=0;
 	}
 
 	for (n = 0; n < DIGITAL_INPUTS; n++) {
 		retval = hal_pin_bit_newf(HAL_OUT, &(data->inputs[n]),
-				comp_id, "%s.input.%01d", prefix, n);
+				comp_id, "%s.input.%02d", prefix, n);
 		if (retval != 0) goto error;
 		*(data->inputs[n])=0;
+		
+		retval = hal_pin_bit_newf(HAL_OUT, &(data->inputs[n+DIGITAL_INPUTS]),
+				comp_id, "%s.input.%02d.not", prefix, n);
+		if (retval != 0) goto error;
+		*(data->inputs[n+DIGITAL_INPUTS])=1;
 	}
 
 	error:
@@ -572,7 +586,6 @@ int rt_bcm2835_init(void)
                     pud_type_rpi4 = 1;
                 }
             }
-        
         }
         
 	fclose(fp);
@@ -916,10 +929,12 @@ void spi_read()
 						if ((rxData.inputs & (1 << i)) != 0)
 						{
 							*(data->inputs[i]) = 1; 		// input is high
+							*(data->inputs[i+DIGITAL_INPUTS]) = 0;  // inverted
 						}
 						else
 						{
 							*(data->inputs[i]) = 0;			// input is low
+							*(data->inputs[i+DIGITAL_INPUTS]) = 1;  // inverted
 						}
 					}
 					break;

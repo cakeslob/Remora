@@ -122,23 +122,23 @@ volatile uint16_t* ptrOutputs;
 // SD card access and Remora communication protocol
 #if defined TARGET_SKRV1_4
     SDBlockDevice blockDevice(P0_9, P0_8, P0_7, P0_6);  // mosi, miso, sclk, cs
-    RemoraComms comms(ptrRxData, ptrTxData);
+  RemoraComms* comms = new RemoraComms(ptrRxData, ptrTxData);
 
 #elif defined TARGET_SKRV2 || TARGET_OCTOPUS_446 || TARGET_BLACK_F407VE || TARGET_OCTOPUS_429 || TARGET_SKRV3
     SDIOBlockDevice blockDevice;
-    RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
+  RemoraComms* comms = new RemoraComms(ptrRxData, ptrTxData, SPI1, PA_4);
 
 
 /*
 // SPI1 SD
 #elif defined TARGET_NUCLEO_F446RE 
     SDBlockDevice blockDevice(PA_7, PA_6, PA_5, PB_5);  // mosi, miso, sclk, cs
-    RemoraComms comms(ptrRxData, ptrTxData, SPI2, PB_1);    // use PC_1 as "slave select"
+  RemoraComms* comms = new RemoraComms(ptrRxData, ptrTxData, SPI2, PB_1);    // use PC_1 as "slave select"
 */
 
 #elif defined TARGET_NUCLEO_F446RE 
     SDBlockDevice blockDevice(PB_15, PB_14, PB_13, PC_4);  // mosi, miso, sclk, cs  SPI2 SD
-    RemoraComms comms(ptrRxData, ptrTxData, SPI2, PB_1);    // use PB_1 as "slave select"
+  RemoraComms* comms = new RemoraComms(ptrRxData, ptrTxData, SPI2, PB_1);    // use PB_1 as "slave select"
 
 
 
@@ -227,8 +227,8 @@ void setup()
     #endif
 
     // initialise the Remora comms 
-    comms.init();
-    comms.start();
+    comms->init();
+    comms->start();
 }
 
 
@@ -299,6 +299,9 @@ void loadModules()
     if (configError) return;
 
     printf("\n5. Loading modules\n");
+
+    // SPI communication monitoring
+    servoThread->registerModule(comms);
 
     JsonArray Modules = doc["Modules"];
 
@@ -421,13 +424,14 @@ int main()
     enum State currentState;
     enum State prevState;
 
-    comms.setStatus(false);
-    comms.setError(false);
+    comms->setStatus(false);
+    comms->setError(false);
     currentState = ST_SETUP;
     prevState = ST_RESET;
 
     printf("\nRemora PRU - Programmable Realtime Unit \n");
     printf("\n Mbed-OS6 \n");
+    printf("\n Remora-spi Driver \n");
 
     watchdog.start(2000);
 
@@ -500,7 +504,7 @@ int main()
             break;
 
 
-        case ST_IDLE:
+case ST_IDLE:
             // do something when idle
             if (currentState != prevState)
             {
@@ -509,14 +513,14 @@ int main()
             prevState = currentState;
 
             // check to see if there there has been SPI errors
-            if (comms.getError())
+            if (comms->getError())
             {
                 printf("Communication data error\n");
-                comms.setError(false);
+                comms->setError(false);
             }
 
             //wait for SPI data before changing to running state
-            if (comms.getStatus())
+            if (comms->getStatus())
             {
                 currentState = ST_RUNNING;
             }
@@ -536,30 +540,8 @@ int main()
             }
             prevState = currentState;
 
-            // check to see if there there has been SPI errors 
-            if (comms.getError())
+            if (comms->getStatus() == false)
             {
-                printf("Communication data error\n");
-                comms.setError(false);
-            }
-            
-            if (comms.getStatus())
-            {
-                // SPI data received by DMA
-                resetCnt = 0;
-                comms.setStatus(false);
-            }
-            else
-            {
-                // no data received by DMA
-                resetCnt++;
-            }
-
-            if (resetCnt > SPI_ERR_MAX)
-            {
-                // reset threshold reached, reset the PRU
-                printf("   Communication data error limit reached, resetting\n");
-                resetCnt = 0;
                 currentState = ST_RESET;
             }
 
@@ -614,9 +596,11 @@ int main()
             break;
       }
 
+    comms->SPItasks();
+
     //ThisThread::sleep_for(LOOP_TIME);
     //wait(LOOP_TIME);
-    wait_us(LOOP_TIME * 1000000);
+    //wait_us(LOOP_TIME * 1000000);
 
     }
 }

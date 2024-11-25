@@ -5,7 +5,7 @@
 	loadrt [EMCMOT]EMCMOT base_period_nsec=[EMCMOT]BASE_PERIOD servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[KINS]JOINTS
 
 	#loadrt remora chip_type=STM SPI_clk_div=64
-	loadrt remora ctrl_type=v,v,p chip_type=STM SPI_clk_div=32
+	loadrt remora-spi ctrl_type=v,v,p SPI_clk_div=32
 	loadrt PRUencoder names=encoderJ0,encoderJ1
 	loadrt pid names=j0pid,j1pid
 
@@ -92,8 +92,8 @@
 
 # end-stops
 
-	net X-home 	remora.input.5 	=> joint.0.home-sw-in 
-	net Y-home 	remora.input.4 	=> joint.1.home-sw-in 
+	net X-home 	remora.input.05 	=> joint.0.home-sw-in 
+	net Y-home 	remora.input.04 	=> joint.1.home-sw-in 
 
 
 # Remora Process Value (PV) feedbacks

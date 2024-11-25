@@ -6,7 +6,7 @@
 
 	#loadrt remora 
 
-	loadrt remora chip_type=STM SPI_clk_div=32 PRU_base_freq=80000
+	loadrt remora-spi SPI_clk_div=32 PRU_base_freq=80000
 	#loadrt remora chip_type=LPC SPI_clk_div=64
 
 loadrt not names=stepen_not
@@ -64,9 +64,9 @@ loadrt not names=stepen_not
 
 # end-stops
 
-	net X-home 	remora.input.5 	=> joint.0.home-sw-in 
+	net X-home 	remora.input.05 	=> joint.0.home-sw-in 
 
-	net Y-home 	remora.input.4 	=> joint.1.home-sw-in 
+	net Y-home 	remora.input.04 	=> joint.1.home-sw-in 
 
 
 	net j0enable => stepen_not.in

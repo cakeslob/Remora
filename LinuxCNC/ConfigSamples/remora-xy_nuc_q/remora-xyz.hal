@@ -6,7 +6,7 @@
 
 	#loadrt remora 
 
-	loadrt remora chip_type=STM SPI_clk_div=32
+	loadrt remora-spi SPI_clk_div=32
 	#loadrt remora chip_type=LPC SPI_clk_div=64
 
 # estop loopback, SPI comms enable and feedback
@@ -57,9 +57,9 @@
 # end-stops
 # end-stops
 
-	net X-home 	remora.input.5 	=> joint.0.home-sw-in 
+	net X-home 	remora.input.05 	=> joint.0.home-sw-in 
 
-	net Y-home 	remora.input.4 	=> joint.1.home-sw-in 
+	net Y-home 	remora.input.04 	=> joint.1.home-sw-in 
 	
 	
 	
@@ -76,7 +76,7 @@ setp encoder.0.position-scale 16384.00
 net encoder-count <= remora.PV.5 => encoder.0.raw_count
 net encoder-phaseZ <= remora.input.15 => encoder.0.phase-Z
 
-net spindle-on <= spindle.0.on => 	remora.output.1 
+net spindle-on <= spindle.0.on => 	remora.output.01 
 #net spindle-cmd-rpm     <= spindle.0.speed-out
 net spindle-cmd-rpm-abs <= spindle.0.speed-out-abs
 net spindle-cmd-rps     <= spindle.0.speed-out-rps

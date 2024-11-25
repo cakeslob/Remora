@@ -147,16 +147,16 @@ volatile uint16_t* ptrOutputs;
 // SD card access and Remora communication protocol
 #if defined TARGET_NUCLEO_F446RE || TARGET_NUCLEO_F446ZE || TARGET_NUCLEO_F411RE || TARGET_NUCLEO_F401RE || TARGET_NUCLEO_F103RB
 //#if defined TARGET_NUCLEO_F446RE 
-    RemoraComms comms(ptrRxData, ptrTxData, SPI2, PB_1);
+  RemoraComms* comms = new RemoraComms(ptrRxData, ptrTxData, SPI2, PB_1);
 
 //#elif defined TARGET_NUCLEO_F446ZE
   //  RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
 
 #elif defined TARGET_NUCLEO_G0B1RE 
-    RemoraComms comms(ptrRxData, ptrTxData, SPI2, PB_10);
+  RemoraComms* comms = new RemoraComms(ptrRxData, ptrTxData, SPI2, PB_10);
 
 #elif defined TARGET_BLUEPILL // || TARGET_NUCLEO_F103RB
-    RemoraComms comms(ptrRxData, ptrTxData, SPI1, PA_4);
+  RemoraComms* comms = new RemoraComms(ptrRxData, ptrTxData, SPI1, PA_4);
 
 
 #endif
@@ -244,8 +244,8 @@ void setup()
     */
 
     // initialise the Remora comms 
-    comms.init();
-    comms.start();
+    comms->init();
+    comms->start();
 }
 
 /*
@@ -425,6 +425,9 @@ void static_loadModules()
 
     printf("\n5. Loading Flexi modules\n");
 
+    // SPI communication monitoring
+    servoThread->registerModule(comms);
+
     ptrInputs = &txData.inputs;
     ptrOutputs = &rxData.outputs;
 
@@ -529,13 +532,14 @@ int main()
     enum State currentState;
     enum State prevState;
 
-    comms.setStatus(false);
-    comms.setError(false);
+    comms->setStatus(false);
+    comms->setError(false);
     currentState = ST_SETUP;
     prevState = ST_RESET;
 
     printf("\nRemora PRU - Programmable Realtime Unit Mbed-OS6 \n");
-        printf("\nLoading - %s\n", BOARD);
+    printf("\nLoading - %s\n", BOARD);
+    printf("\n Remora-spi Driver \n");
 
     watchdog.start(2000);
 
@@ -616,7 +620,7 @@ int main()
             break;
 
 
-        case ST_IDLE:
+case ST_IDLE:
             // do something when idle
             if (currentState != prevState)
             {
@@ -625,14 +629,14 @@ int main()
             prevState = currentState;
 
             // check to see if there there has been SPI errors
-            if (comms.getError())
+            if (comms->getError())
             {
                 printf("Communication data error\n");
-                comms.setError(false);
+                comms->setError(false);
             }
 
             //wait for SPI data before changing to running state
-            if (comms.getStatus())
+            if (comms->getStatus())
             {
                 currentState = ST_RUNNING;
             }
@@ -652,30 +656,8 @@ int main()
             }
             prevState = currentState;
 
-            // check to see if there there has been SPI errors 
-            if (comms.getError())
+            if (comms->getStatus() == false)
             {
-                printf("Communication data error\n");
-                comms.setError(false);
-            }
-            
-            if (comms.getStatus())
-            {
-                // SPI data received by DMA
-                resetCnt = 0;
-                comms.setStatus(false);
-            }
-            else
-            {
-                // no data received by DMA
-                resetCnt++;
-            }
-
-            if (resetCnt > SPI_ERR_MAX)
-            {
-                // reset threshold reached, reset the PRU
-                printf("   Communication data error limit reached, resetting\n");
-                resetCnt = 0;
                 currentState = ST_RESET;
             }
 
@@ -730,9 +712,11 @@ int main()
             break;
       }
 
+    comms->SPItasks();
+
     //ThisThread::sleep_for(LOOP_TIME);
     //wait(LOOP_TIME);
-    wait_us(LOOP_TIME * 1000000);
+    //wait_us(LOOP_TIME * 1000000);
 
     }
 }

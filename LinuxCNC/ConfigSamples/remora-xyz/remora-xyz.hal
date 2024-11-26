@@ -57,6 +57,10 @@
 	net j2pos-fb 		<= remora.joint.2.pos-fb 	=> joint.2.motor-pos-fb
 	net j2enable 		<= joint.2.amp-enable-out 	=> remora.joint.2.enable
 
+	
+	net j0enable => remora.output.0 	
+	
+
 # end-stops
 
 	net X-home 	remora.input.00 	=> joint.0.home-sw-in joint.0.neg-lim-sw-in
@@ -70,8 +74,8 @@
 #net hold 	remora.input.05 	
 #net resume 	remora.input.06 	
 
-#net out1 	remora.output.00 	
-#net out2 	remora.output.01
+#net out1 	remora.output.01 	
+#net out2 	remora.output.02
 
 # PWM output
 

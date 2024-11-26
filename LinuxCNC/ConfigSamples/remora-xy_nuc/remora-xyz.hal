@@ -70,6 +70,6 @@ loadrt not names=stepen_not
 
 
 	net j0enable => stepen_not.in
-	net stepen stepen_not.out => remora.output.0 	
+	net stepen stepen_not.out => remora.output.00 	
 
 

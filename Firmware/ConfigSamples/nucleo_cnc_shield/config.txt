@@ -96,6 +96,14 @@
 		"Data Bit":			6
 	},
 	{
+	"Thread": "Servo",
+	"Type": "Digital Pin",
+		"Comment":			"USER_BUTT",
+		"Pin":				"PC_13",
+		"Mode":				"Input",
+		"Data Bit":			7
+	},
+	{
     "Thread": "Servo",
     "Type": "Digital Pin",
             "Comment":                      "STEPPER ENABLE",

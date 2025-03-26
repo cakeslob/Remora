@@ -248,7 +248,7 @@
         "core": "Cortex-M3",
         "extra_labels_add": ["STM32F103xC"],
         "macros_add": ["STM32F103xE"],
-        "supported_toolchains": ["ARMC6"],
+      "supported_toolchains": ["ARM","GCC_ARM"],
 
         "device_has_add": [
             "CAN",
